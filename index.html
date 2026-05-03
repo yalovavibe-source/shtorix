@@ -84,6 +84,194 @@
     font-size: 2rem;
     z-index: 2;
   }
+
+  /* ===== ANIMATED BUTTONS ===== */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 38px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: transparent;
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 1;
+  }
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--green-bright));
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+    z-index: -1;
+  }
+  .btn:hover::before { width: 400px; height: 400px; }
+  .btn:hover {
+    color: var(--bg-dark);
+    border-color: transparent;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(212,184,96,0.4);
+  }
+  .btn:active { transform: translateY(0) scale(0.98); }
+  .btn .arrow {
+    display: inline-block;
+    transition: transform 0.4s;
+  }
+  .btn:hover .arrow { transform: translateX(6px) rotate(-90deg); }
+
+  .btn-pulse {
+    position: relative;
+  }
+  .btn-pulse::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50px;
+    border: 2px solid var(--gold);
+    animation: pulseRing 2s infinite;
+    pointer-events: none;
+  }
+  @keyframes pulseRing {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+
+  /* Filter buttons */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+  .filter-btn {
+    padding: 10px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--cream);
+    background: rgba(31,77,46,0.3);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+  .filter-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(212,184,96,0.25), transparent);
+    transition: left 0.6s;
+  }
+  .filter-btn:hover::before { left: 100%; }
+  .filter-btn:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212,184,96,0.2);
+  }
+  .filter-btn.active {
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    border-color: transparent;
+    box-shadow: 0 8px 25px rgba(212,184,96,0.5);
+  }
+
+  /* Card view button — animated arrow */
+  .croc-card .view-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    padding: 8px 18px;
+    background: rgba(212,184,96,0.1);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    color: var(--green-bright);
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.4s;
+    position: relative;
+    overflow: hidden;
+  }
+  .croc-card:hover .view-btn {
+    background: var(--gold);
+    color: var(--bg-dark);
+    border-color: var(--gold);
+    box-shadow: 0 6px 18px rgba(212,184,96,0.4);
+  }
+  .croc-card .view-btn .arrow {
+    transition: transform 0.4s;
+  }
+  .croc-card:hover .view-btn .arrow {
+    transform: translateX(6px);
+  }
+
+  /* Floating back-to-top */
+  .back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--green-bright));
+    border: none;
+    color: var(--bg-dark);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 90;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform: translateY(20px) scale(0.8);
+    box-shadow: 0 10px 30px rgba(212,184,96,0.4);
+  }
+  .back-to-top.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+  }
+  .back-to-top:hover {
+    transform: translateY(-6px) scale(1.1) rotate(360deg);
+    box-shadow: 0 15px 40px rgba(212,184,96,0.6);
+  }
+
+  /* Ripple effect */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.4);
+    transform: scale(0);
+    animation: rippleAnim 0.6s linear;
+    pointer-events: none;
+  }
+  @keyframes rippleAnim {
+    to { transform: scale(4); opacity: 0; }
+  }
   @keyframes bounce {
     0%, 100% { transform: translateX(-50%) translateY(0); }
     50% { transform: translateX(-50%) translateY(-15px); }
@@ -248,17 +436,6 @@
     margin-bottom: 12px;
   }
   .croc-card p { font-size: 0.95rem; opacity: 0.85; }
-  .croc-card .view-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 15px;
-    color: var(--green-bright);
-    font-weight: 500;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-  }
-  .croc-card:hover .view-btn { color: var(--gold); }
   .badge {
     position: absolute;
     top: 15px;
@@ -552,6 +729,9 @@
   <div class="hero-content">
     <h1>МИР КРОКОДИЛОВ</h1>
     <p class="subtitle">Они пережили динозавров, ледниковые эпохи и шесть массовых вымираний. Познакомьтесь с самыми древними хищниками планеты — тенями из мезозоя, что и сегодня властвуют над водами тропиков.</p>
+    <button class="btn btn-pulse" onclick="scrollToSpecies()">
+      Исследовать <span class="arrow">↓</span>
+    </button>
   </div>
   <div class="scroll-indicator">▼</div>
 </section>
@@ -575,11 +755,19 @@
 <div class="container">
 
 <!-- SPECIES -->
-<section class="section">
+<section class="section" id="species">
   <div class="section-header">
     <span class="section-tag">Виды</span>
     <h2 class="section-title">Властители Водоёмов</h2>
     <p class="section-desc">От гиганта-людоеда австралийских мангров до карликового жителя влажных африканских лесов — каждый из них рассказывает свою историю эволюции.</p>
+  </div>
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-btn active" data-filter="all">Все</button>
+    <button class="filter-btn" data-filter="crocodile">Крокодилы</button>
+    <button class="filter-btn" data-filter="alligator">Аллигаторы</button>
+    <button class="filter-btn" data-filter="gharial">Гавиалы</button>
+    <button class="filter-btn" data-filter="endangered">Под угрозой</button>
+    <button class="filter-btn" data-filter="largest">Гиганты</button>
   </div>
   <div class="croc-grid" id="crocGrid"></div>
 </section>
@@ -652,6 +840,8 @@
   <img id="lightboxImg" src="" alt="">
 </div>
 
+<button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Наверх">↑</button>
+
 <footer>
   <p>🐊 Сделано с уважением к древнейшим хищникам Земли 🐊</p>
 </footer>
@@ -663,6 +853,7 @@ const crocodiles = [
   {
     name: "Нильский крокодил",
     latin: "Crocodylus niloticus",
+    tags: ["crocodile", "largest"],
     short: "Король африканских вод. До 6 метров грозы саванны.",
     description: "Хозяин Нила и душа африканских саванн. Этот гигант — символ силы со времён фараонов: древние египтяне поклонялись ему как богу Себеку. Он терпеливо ждёт у водопоя часами, маскируясь под бревно, чтобы в одно мгновение вырвать из стаи зебру или антилопу гну. Способен поедать практически любую крупную добычу, заглатывая куски до 10 кг.",
     badge: "Вызывает наименьшие опасения",
@@ -678,6 +869,7 @@ const crocodiles = [
   {
     name: "Гребнистый крокодил",
     latin: "Crocodylus porosus",
+    tags: ["crocodile", "largest"],
     short: "Самая крупная рептилия в мире. Покоритель океана.",
     description: "Морской титан — единственный крокодил, способный пересекать океаны. Самцы достигают семи метров и веса автомобиля. Уроженец мангровых зарослей Австралии и Юго-Восточной Азии, он одинаково комфортно чувствует себя в пресной воде и в открытом море. Знаменитый Кассиус — рекордсмен среди живущих: 5,48 м чистого ужаса в чешуе.",
     badge: "Самый крупный вид",
@@ -693,6 +885,7 @@ const crocodiles = [
   {
     name: "Американский аллигатор",
     latin: "Alligator mississippiensis",
+    tags: ["alligator"],
     short: "Хозяин болот Луизианы и Флориды.",
     description: "Икона американского Юга. В отличие от крокодилов, у аллигатора широкая, лопатообразная морда и зубы, скрытые при закрытой пасти. Численность вида была восстановлена с грани вымирания в 1970-х — сегодня более миллиона особей живут от Техаса до Каролины. В болотах Эверглейдс они — экосистемные инженеры, роющие «аллигаторовые ямы», которыми пользуются другие животные в засуху.",
     badge: "Восстановлен из Красной книги",
@@ -708,6 +901,7 @@ const crocodiles = [
   {
     name: "Гавиал",
     latin: "Gavialis gangeticus",
+    tags: ["gharial", "endangered", "largest"],
     short: "Длинноносый страж священных рек Индии.",
     description: "Существо, словно сошедшее с гравюры из бестиария. Длинная узкая морда с десятками одинаковых тонких зубов идеально приспособлена под рыбную ловлю — резкий боковой удар головой, и добыча в зубах. На конце морды у самцов — характерный «гара» (горшок), благодаря которому вид и получил название. На свободе осталось менее 1000 особей — гавиалу грозит исчезновение.",
     badge: "На грани исчезновения",
@@ -724,6 +918,7 @@ const crocodiles = [
   {
     name: "Острорылый крокодил",
     latin: "Crocodylus acutus",
+    tags: ["crocodile"],
     short: "Загадочный обитатель Карибского бассейна.",
     description: "Стройный, элегантный, с заострённой мордой — самый «крокодиловый» из крокодилов. Уверенно чувствует себя в солёной воде: его соляные железы способны выводить избыток соли, что позволяет жить в эстуариях и даже мангровых лагунах. Встречается от Флориды до Перу. В отличие от родственников, относительно миролюбив к людям и предпочитает уйти, чем нападать.",
     badge: "Уязвимый вид",
@@ -739,6 +934,7 @@ const crocodiles = [
   {
     name: "Китайский аллигатор",
     latin: "Alligator sinensis",
+    tags: ["alligator", "endangered"],
     short: "Маленький дракон долины Янцзы.",
     description: "Возможный прототип китайских драконов в мифологии — он действительно живёт в Китае более 20 миллионов лет. Маленький, скромный, прячется в норах с октября по апрель, погружаясь в спячку. Сегодня в дикой природе осталось около 150 особей — это один из самых редких крокодилов мира. Программы разведения в неволе уже выпустили в природу сотни молодых животных.",
     badge: "На грани исчезновения",
@@ -755,6 +951,7 @@ const crocodiles = [
   {
     name: "Кубинский крокодил",
     latin: "Crocodylus rhombifer",
+    tags: ["crocodile", "endangered"],
     short: "Самый агрессивный и редкий — прыгающий охотник Кубы.",
     description: "Маленький, но яростный — кубинский крокодил способен прыгать вертикально, выскакивая из воды, чтобы сбить добычу с ветки. Когда-то вид был широко распространён на Карибах, но сегодня сжался до пары болот Сапаты и Лануэ — всего около 4000 особей. Известен ярко-жёлтыми вспышками на чёрной чешуе и почти собачьей сообразительностью при охоте в стае.",
     badge: "Вид в критической опасности",
@@ -771,6 +968,7 @@ const crocodiles = [
   {
     name: "Карликовый крокодил",
     latin: "Osteolaemus tetraspis",
+    tags: ["crocodile"],
     short: "Самый маленький — лесной житель Западной Африки.",
     description: "Самый компактный и самый забронированный крокодил мира — почти всё его тело покрыто плотной костяной кольчугой. Скрытен и ночен: днём прячется в норах, прорытых в берегах рек, а ночью выходит на охоту в сырых лесах. В пещерах Габона учёные нашли популяцию с оранжево-красной чешуёй — пигмент, изменённый веками жизни в темноте без солнца и среди гуано летучих мышей.",
     badge: "Уязвимый вид",
@@ -805,7 +1003,7 @@ function renderCrocodiles(list) {
         <h3>${croc.name}</h3>
         <p class="latin">${croc.latin}</p>
         <p>${croc.short}</p>
-        <span class="view-btn">Подробнее →</span>
+        <span class="view-btn">Подробнее <span class="arrow">→</span></span>
       </div>
     `;
     grid.appendChild(card);
@@ -860,16 +1058,21 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-function searchContent() {
+let activeFilter = 'all';
+
+function applyFilters() {
   const query = document.getElementById('searchInput').value.toLowerCase().trim();
 
-  const filtered = crocodiles.filter(c =>
-    c.name.toLowerCase().includes(query) ||
-    c.latin.toLowerCase().includes(query) ||
-    c.short.toLowerCase().includes(query) ||
-    c.description.toLowerCase().includes(query) ||
-    Object.values(c.info).some(v => String(v).toLowerCase().includes(query))
-  );
+  const filtered = crocodiles.filter(c => {
+    const matchesQuery = !query ||
+      c.name.toLowerCase().includes(query) ||
+      c.latin.toLowerCase().includes(query) ||
+      c.short.toLowerCase().includes(query) ||
+      c.description.toLowerCase().includes(query) ||
+      Object.values(c.info).some(v => String(v).toLowerCase().includes(query));
+    const matchesFilter = activeFilter === 'all' || (c.tags || []).includes(activeFilter);
+    return matchesQuery && matchesFilter;
+  });
   renderCrocodiles(filtered);
 
   document.querySelectorAll('#featuresGrid .feature-card').forEach(el => {
@@ -880,6 +1083,48 @@ function searchContent() {
     el.style.display = !query || el.textContent.toLowerCase().includes(query) ? '' : 'none';
   });
 }
+
+function searchContent() { applyFilters(); }
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
+
+function scrollToSpecies() {
+  document.getElementById('species').scrollIntoView({ behavior: 'smooth' });
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('backToTop');
+  if (window.scrollY > 600) btn.classList.add('visible');
+  else btn.classList.remove('visible');
+});
+
+function attachRipple(selector) {
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest(selector);
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    const size = Math.max(rect.width, rect.height);
+    ripple.className = 'ripple';
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+    target.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  });
+}
+attachRipple('.btn, .filter-btn, .back-to-top');
 
 renderCrocodiles(crocodiles);
 </script>
