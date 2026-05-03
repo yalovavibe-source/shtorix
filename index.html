@@ -2144,6 +2144,8 @@ document.getElementById('orderModal').addEventListener('click', (e) => {
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const wrap = document.getElementById('canvasWrap');
 
@@ -2159,7 +2161,15 @@ renderer.setSize(wrap.clientWidth, wrap.clientHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 wrap.appendChild(renderer.domElement);
+
+// Environment map for nice reflections / ambient lighting
+const pmrem = new THREE.PMREMGenerator(renderer);
+const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environment = envTex;
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
@@ -2188,7 +2198,7 @@ scene.add(fill);
 
 // Room
 const ROOM = 10;
-const floorMat = new THREE.MeshStandardMaterial({ color: 0x8b6f4e, roughness: 0.85 });
+const floorMat = new THREE.MeshStandardMaterial({ color: 0xa88a6a, roughness: 0.78, map: makeFloorTexture() });
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, ROOM), floorMat);
 floor.rotation.x = -Math.PI / 2;
 floor.receiveShadow = true;
@@ -2218,10 +2228,163 @@ selectionRing.rotation.x = -Math.PI / 2;
 selectionRing.visible = false;
 scene.add(selectionRing);
 
+// ============ Procedural Textures ============
+function makeWoodTexture(baseColor = '#6b4a2a') {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 512;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = baseColor;
+  ctx.fillRect(0, 0, 512, 512);
+  // Wood grain — long vertical strokes with noise
+  for (let i = 0; i < 60; i++) {
+    ctx.strokeStyle = `rgba(0,0,0,${0.04 + Math.random() * 0.08})`;
+    ctx.lineWidth = 0.5 + Math.random() * 1.8;
+    ctx.beginPath();
+    let x = Math.random() * 512;
+    ctx.moveTo(x, 0);
+    for (let y = 0; y < 512; y += 4) {
+      x += (Math.random() - 0.5) * 4;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  // Knots
+  for (let i = 0; i < 4; i++) {
+    const cx = Math.random() * 512, cy = Math.random() * 512;
+    const grad = ctx.createRadialGradient(cx, cy, 2, cx, cy, 18 + Math.random() * 10);
+    grad.addColorStop(0, 'rgba(0,0,0,0.4)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx, cy, 25, 0, Math.PI * 2); ctx.fill();
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function makeFabricTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 256;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, 256, 256);
+  // Weave grid
+  for (let i = 0; i < 256; i += 3) {
+    ctx.strokeStyle = `rgba(0,0,0,${0.06 + Math.random() * 0.04})`;
+    ctx.lineWidth = 0.6;
+    ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 256); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(256, i); ctx.stroke();
+  }
+  // Speckle noise
+  for (let i = 0; i < 4000; i++) {
+    ctx.fillStyle = `rgba(${Math.random() < 0.5 ? '0,0,0' : '255,255,255'},${Math.random() * 0.06})`;
+    ctx.fillRect(Math.random() * 256, Math.random() * 256, 1, 1);
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(2, 2);
+  return t;
+}
+function makeMarbleTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 512;
+  const ctx = cv.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 512, 512);
+  grad.addColorStop(0, '#f5f1e8'); grad.addColorStop(0.5, '#e8e0d0'); grad.addColorStop(1, '#f0e8d8');
+  ctx.fillStyle = grad; ctx.fillRect(0, 0, 512, 512);
+  for (let i = 0; i < 12; i++) {
+    ctx.strokeStyle = `rgba(80,70,60,${0.15 + Math.random() * 0.2})`;
+    ctx.lineWidth = 0.5 + Math.random() * 1.5;
+    ctx.beginPath();
+    ctx.moveTo(Math.random() * 512, Math.random() * 512);
+    for (let j = 0; j < 8; j++) ctx.bezierCurveTo(
+      Math.random() * 512, Math.random() * 512,
+      Math.random() * 512, Math.random() * 512,
+      Math.random() * 512, Math.random() * 512
+    );
+    ctx.stroke();
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function makeFloorTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 512;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#8b6f4e'; ctx.fillRect(0, 0, 512, 512);
+  // Plank lines
+  for (let y = 0; y < 512; y += 64) {
+    ctx.fillStyle = `rgba(${100 + Math.random() * 60},${70 + Math.random() * 40},${40 + Math.random() * 30},1)`;
+    ctx.fillRect(0, y, 512, 60);
+    // Vertical seams
+    for (let x = Math.random() * 200; x < 512; x += 100 + Math.random() * 80) {
+      ctx.fillStyle = 'rgba(0,0,0,0.4)';
+      ctx.fillRect(x, y, 1, 60);
+    }
+    // Horizontal seam
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(0, y, 512, 1);
+  }
+  // Wood grain overlay
+  for (let i = 0; i < 100; i++) {
+    ctx.strokeStyle = `rgba(0,0,0,${0.03 + Math.random() * 0.05})`;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    let x = Math.random() * 512;
+    ctx.moveTo(x, 0);
+    for (let y = 0; y < 512; y += 4) { x += (Math.random() - 0.5) * 3; ctx.lineTo(x, y); }
+    ctx.stroke();
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(3, 3);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+
+const TEX = {
+  fabric: makeFabricTexture(),
+  marble: makeMarbleTexture(),
+  woodCache: new Map()
+};
+function woodTex(hex) {
+  const key = hex.toString(16);
+  if (!TEX.woodCache.has(key)) {
+    TEX.woodCache.set(key, makeWoodTexture('#' + new THREE.Color(hex).getHexString()));
+  }
+  return TEX.woodCache.get(key);
+}
+
 // ============ Furniture factory ============
 function mat(c, r = 0.6) { return new THREE.MeshStandardMaterial({ color: c, roughness: r }); }
+function woodMat(c, r = 0.75) {
+  return new THREE.MeshStandardMaterial({ color: c, roughness: r, map: woodTex(c) });
+}
+function fabricMat(c, r = 0.95) {
+  return new THREE.MeshStandardMaterial({ color: c, roughness: r, map: TEX.fabric });
+}
+function metalMat(c = 0xc4c4c4, r = 0.25) {
+  return new THREE.MeshStandardMaterial({ color: c, roughness: r, metalness: 0.85 });
+}
 function meshBox(w, h, d, c, r) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c, r));
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function meshRound(w, h, d, c, radius = 0.04, r = 0.6) {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 4, radius), mat(c, r));
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function meshFabric(w, h, d, c, radius = 0.06) {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 6, radius), fabricMat(c));
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function meshWood(w, h, d, c, radius = 0.015) {
+  const m = new THREE.Mesh(new RoundedBoxGeometry(w, h, d, 3, radius), woodMat(c));
   m.castShadow = true; m.receiveShadow = true;
   return m;
 }
@@ -2234,51 +2397,163 @@ function meshCyl(rt, rb, h, c, seg = 16) {
 const FURNITURE = {
   sofa: { name: 'Диван', icon: '🛋️', price: 45000, color: 0x6b8a72, build(c) {
     const g = new THREE.Group();
-    const base = meshBox(2.4, 0.5, 1, c); base.position.y = 0.4; g.add(base);
-    const seat = meshBox(2.3, 0.3, 0.95, c); seat.position.y = 0.78; g.add(seat);
-    const back = meshBox(2.4, 0.9, 0.25, c); back.position.set(0, 1.1, -0.4); g.add(back);
-    const armL = meshBox(0.25, 0.7, 1, c); armL.position.set(-1.07, 1, 0); g.add(armL);
+    // Main body (lower frame)
+    const body = meshFabric(2.4, 0.45, 1, c, 0.06);
+    body.position.y = 0.32; g.add(body);
+    // Three separate seat cushions
+    for (let i = 0; i < 3; i++) {
+      const cushion = meshFabric(0.74, 0.22, 0.88, c, 0.1);
+      cushion.position.set(-0.78 + i * 0.78, 0.66, 0.04);
+      g.add(cushion);
+    }
+    // Three back cushions, slightly tilted
+    for (let i = 0; i < 3; i++) {
+      const back = meshFabric(0.74, 0.7, 0.22, c, 0.1);
+      back.position.set(-0.78 + i * 0.78, 1.05, -0.39);
+      back.rotation.x = -0.08;
+      g.add(back);
+    }
+    // Plush arms
+    const armL = meshFabric(0.25, 0.65, 1, c, 0.08);
+    armL.position.set(-1.07, 0.95, 0); g.add(armL);
     const armR = armL.clone(); armR.position.x = 1.07; g.add(armR);
-    [-0.95, 0.95].forEach(x => [-0.4, 0.4].forEach(z => { const l = meshBox(0.1, 0.15, 0.1, 0x3a2a1f); l.position.set(x, 0.075, z); g.add(l); }));
+    // Throw pillows
+    const pillowMat2 = fabricMat(0xeaddc4);
+    for (let i = 0; i < 2; i++) {
+      const p = new THREE.Mesh(new RoundedBoxGeometry(0.4, 0.4, 0.18, 6, 0.1), pillowMat2);
+      p.position.set(-0.6 + i * 1.2, 0.97, 0.3);
+      p.rotation.set(0, (Math.random() - 0.5) * 0.3, (Math.random() - 0.5) * 0.4);
+      p.castShadow = true; g.add(p);
+    }
+    // Tapered wooden legs
+    const legGeo = new THREE.CylinderGeometry(0.035, 0.05, 0.18, 12);
+    const legM = new THREE.MeshStandardMaterial({ color: 0x2a1810, roughness: 0.5, metalness: 0.1 });
+    [-0.95, 0.95].forEach(x => [-0.4, 0.4].forEach(z => {
+      const l = new THREE.Mesh(legGeo, legM); l.position.set(x, 0.09, z); l.castShadow = true; g.add(l);
+    }));
     return g;
   }},
   armchair: { name: 'Кресло', icon: '💺', price: 18000, color: 0x9c6b4a, build(c) {
     const g = new THREE.Group();
-    const base = meshBox(1, 0.45, 1, c); base.position.y = 0.4; g.add(base);
-    const seat = meshBox(0.95, 0.28, 0.95, c); seat.position.y = 0.76; g.add(seat);
-    const back = meshBox(1, 0.95, 0.22, c); back.position.set(0, 1.1, -0.4); g.add(back);
-    const armL = meshBox(0.18, 0.6, 1, c); armL.position.set(-0.41, 0.95, 0); g.add(armL);
+    const body = meshFabric(1, 0.4, 1, c, 0.06);
+    body.position.y = 0.3; g.add(body);
+    // Seat cushion
+    const seat = meshFabric(0.92, 0.22, 0.88, c, 0.1);
+    seat.position.y = 0.62; g.add(seat);
+    // Curved back (use rounded box with slight tilt)
+    const back = meshFabric(1, 0.95, 0.25, c, 0.12);
+    back.position.set(0, 1.05, -0.4); back.rotation.x = -0.08; g.add(back);
+    // Soft arms
+    const armL = meshFabric(0.18, 0.55, 0.95, c, 0.08);
+    armL.position.set(-0.41, 0.85, 0); g.add(armL);
     const armR = armL.clone(); armR.position.x = 0.41; g.add(armR);
+    // Tapered legs
+    const legGeo = new THREE.CylinderGeometry(0.03, 0.04, 0.12, 12);
+    const legM = new THREE.MeshStandardMaterial({ color: 0x2a1810, roughness: 0.5 });
+    [-0.4, 0.4].forEach(x => [-0.4, 0.4].forEach(z => {
+      const l = new THREE.Mesh(legGeo, legM); l.position.set(x, 0.06, z); l.castShadow = true; g.add(l);
+    }));
     return g;
   }},
   table: { name: 'Стол', icon: '🍽️', price: 25000, color: 0x6b4a2a, build(c) {
     const g = new THREE.Group();
-    const top = meshBox(2, 0.08, 1, c); top.position.y = 0.96; g.add(top);
-    [-0.85, 0.85].forEach(x => [-0.4, 0.4].forEach(z => { const leg = meshBox(0.12, 0.92, 0.12, c); leg.position.set(x, 0.46, z); g.add(leg); }));
+    // Wood top with grain texture
+    const top = meshWood(2, 0.08, 1, c, 0.02);
+    top.position.y = 0.96; g.add(top);
+    // Apron under top
+    const apron = new THREE.Mesh(new RoundedBoxGeometry(1.85, 0.1, 0.85, 2, 0.01), woodMat(c, 0.7));
+    apron.position.y = 0.87; apron.castShadow = true; apron.receiveShadow = true; g.add(apron);
+    // Tapered legs
+    const legM = woodMat(c, 0.7);
+    [-0.85, 0.85].forEach(x => [-0.38, 0.38].forEach(z => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.07, 0.85, 8), legM);
+      leg.position.set(x, 0.42, z); leg.castShadow = true; leg.receiveShadow = true; g.add(leg);
+    }));
     return g;
   }},
   chair: { name: 'Стул', icon: '🪑', price: 6000, color: 0x4a3525, build(c) {
     const g = new THREE.Group();
-    const seat = meshBox(0.5, 0.07, 0.5, c); seat.position.y = 0.5; g.add(seat);
-    const back = meshBox(0.5, 0.85, 0.07, c); back.position.set(0, 0.93, -0.21); g.add(back);
-    [-0.21, 0.21].forEach(x => [-0.21, 0.21].forEach(z => { const leg = meshBox(0.06, 0.5, 0.06, c); leg.position.set(x, 0.25, z); g.add(leg); }));
+    // Seat
+    const seat = meshWood(0.5, 0.06, 0.5, c, 0.02);
+    seat.position.y = 0.5; g.add(seat);
+    // Curved back rest — three slats
+    const backFrameM = woodMat(c, 0.7);
+    [-0.21, 0.21].forEach(x => {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.95, 10), backFrameM);
+      post.position.set(x, 0.97, -0.22); post.castShadow = true; g.add(post);
+    });
+    // Horizontal back slats
+    for (let i = 0; i < 3; i++) {
+      const slat = new THREE.Mesh(new RoundedBoxGeometry(0.4, 0.06, 0.04, 2, 0.015), backFrameM);
+      slat.position.set(0, 0.7 + i * 0.14, -0.22); slat.castShadow = true; g.add(slat);
+    }
+    // Top rail
+    const top = new THREE.Mesh(new RoundedBoxGeometry(0.5, 0.08, 0.06, 2, 0.02), backFrameM);
+    top.position.set(0, 1.4, -0.22); top.castShadow = true; g.add(top);
+    // Tapered legs
+    [-0.21, 0.21].forEach(x => [-0.21, 0.21].forEach(z => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.04, 0.5, 8), backFrameM);
+      leg.position.set(x, 0.25, z); leg.castShadow = true; g.add(leg);
+    }));
+    // Stretcher between front legs
+    const stretcher = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.42, 8), backFrameM);
+    stretcher.rotation.z = Math.PI / 2; stretcher.position.set(0, 0.15, 0.21); g.add(stretcher);
     return g;
   }},
   wardrobe: { name: 'Шкаф', icon: '🚪', price: 35000, color: 0x5a4030, build(c) {
     const g = new THREE.Group();
-    const body = meshBox(2, 2.4, 0.6, c); body.position.y = 1.2; g.add(body);
-    const door = meshBox(0.95, 2.2, 0.05, 0x6e5040); door.position.set(-0.5, 1.2, 0.32); g.add(door);
-    const door2 = door.clone(); door2.position.x = 0.5; g.add(door2);
-    [-0.5, 0.5].forEach(x => { const h = meshCyl(0.04, 0.04, 0.15, 0xd4b860, 12); h.rotation.z = Math.PI / 2; h.position.set(x + (x > 0 ? -0.3 : 0.3), 1.2, 0.36); g.add(h); });
+    // Body
+    const body = meshWood(2, 2.4, 0.6, c, 0.02);
+    body.position.y = 1.2; g.add(body);
+    // Doors with raised panels (slightly recessed look using extra layer)
+    const doorM = woodMat(c, 0.65);
+    [-0.5, 0.5].forEach(x => {
+      const door = new THREE.Mesh(new RoundedBoxGeometry(0.96, 2.25, 0.04, 3, 0.015), doorM);
+      door.position.set(x, 1.2, 0.32); door.castShadow = true; door.receiveShadow = true; g.add(door);
+      // Inner panel raised
+      const panel = new THREE.Mesh(new RoundedBoxGeometry(0.7, 1.9, 0.02, 2, 0.012), doorM);
+      panel.position.set(x, 1.2, 0.345); g.add(panel);
+      // Brass handle
+      const handleM = new THREE.MeshStandardMaterial({ color: 0xd4b860, roughness: 0.2, metalness: 0.85 });
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.18, 12), handleM);
+      handle.rotation.x = Math.PI / 2;
+      handle.position.set(x + (x > 0 ? -0.32 : 0.32), 1.2, 0.38); g.add(handle);
+    });
+    // Top moulding
+    const moulding = new THREE.Mesh(new RoundedBoxGeometry(2.1, 0.08, 0.7, 2, 0.02), doorM);
+    moulding.position.y = 2.42; moulding.castShadow = true; g.add(moulding);
+    // Base plinth
+    const plinth = new THREE.Mesh(new RoundedBoxGeometry(2, 0.12, 0.6, 2, 0.015), doorM);
+    plinth.position.y = 0.06; g.add(plinth);
     return g;
   }},
   bed: { name: 'Кровать', icon: '🛏️', price: 40000, color: 0x8a7a8a, build(c) {
     const g = new THREE.Group();
-    const frame = meshBox(2.2, 0.3, 2.6, 0x3a2a20); frame.position.y = 0.2; g.add(frame);
-    const mattress = meshBox(2, 0.3, 2.4, 0xf5f1e8, 0.8); mattress.position.y = 0.5; g.add(mattress);
-    const headboard = meshBox(2.2, 1.1, 0.15, c); headboard.position.set(0, 0.85, -1.3); g.add(headboard);
-    const pillow1 = meshBox(0.7, 0.18, 0.4, 0xeeeeee, 0.9); pillow1.position.set(-0.45, 0.74, -0.95); g.add(pillow1);
-    const pillow2 = pillow1.clone(); pillow2.position.x = 0.45; g.add(pillow2);
+    // Frame
+    const frame = meshWood(2.2, 0.3, 2.6, 0x3a2a20, 0.02);
+    frame.position.y = 0.2; g.add(frame);
+    // Mattress
+    const mattress = new THREE.Mesh(new RoundedBoxGeometry(2.05, 0.32, 2.45, 4, 0.06), fabricMat(0xf5f1e8, 0.92));
+    mattress.position.y = 0.5; mattress.castShadow = true; mattress.receiveShadow = true; g.add(mattress);
+    // Blanket — slightly rumpled
+    const blanket = new THREE.Mesh(new RoundedBoxGeometry(2.1, 0.06, 1.7, 4, 0.04), fabricMat(c, 0.92));
+    blanket.position.set(0, 0.69, 0.35); blanket.castShadow = true; g.add(blanket);
+    // Tufted headboard with buttons
+    const hbM = fabricMat(c, 0.85);
+    const headboard = new THREE.Mesh(new RoundedBoxGeometry(2.2, 1.1, 0.18, 4, 0.06), hbM);
+    headboard.position.set(0, 0.95, -1.3); headboard.castShadow = true; g.add(headboard);
+    // Tufting buttons on headboard
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) {
+      const btn = new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 6), new THREE.MeshStandardMaterial({ color: c, roughness: 0.3, metalness: 0.4 }));
+      btn.position.set(-0.7 + i * 0.47, 0.7 + j * 0.4, -1.21); g.add(btn);
+    }
+    // Two pillows
+    for (let i = 0; i < 2; i++) {
+      const pillow = new THREE.Mesh(new RoundedBoxGeometry(0.75, 0.18, 0.4, 6, 0.08), fabricMat(0xfafaf5, 0.92));
+      pillow.position.set(-0.45 + i * 0.9, 0.74, -0.93);
+      pillow.rotation.set(0, (Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.1);
+      pillow.castShadow = true; g.add(pillow);
+    }
     return g;
   }},
   carpet: { name: 'Ковёр', icon: '🟫', price: 12000, color: 0x9c4a4a, build(c) {
@@ -2308,53 +2583,126 @@ const FURNITURE = {
   }},
   desk: { name: 'Письменный стол', icon: '🖥️', price: 22000, color: 0x4a3525, build(c) {
     const g = new THREE.Group();
-    const top = meshBox(1.6, 0.06, 0.7, c); top.position.y = 0.74; g.add(top);
-    const drawerBlock = meshBox(0.5, 0.6, 0.65, c); drawerBlock.position.set(0.5, 0.4, 0); g.add(drawerBlock);
-    const drawer1 = meshBox(0.45, 0.15, 0.05, 0x6e5040); drawer1.position.set(0.5, 0.55, 0.33); g.add(drawer1);
-    const drawer2 = drawer1.clone(); drawer2.position.y = 0.35; g.add(drawer2);
-    const drawer3 = drawer1.clone(); drawer3.position.y = 0.15; g.add(drawer3);
-    [-0.7, -0.7].forEach((x, i) => { const leg = meshBox(0.07, 0.7, 0.07, c); leg.position.set(x, 0.35, i === 0 ? -0.3 : 0.3); g.add(leg); });
-    const leg2 = meshBox(0.07, 0.7, 0.07, c); leg2.position.set(-0.7, 0.35, 0.3); g.add(leg2);
+    const top = meshWood(1.6, 0.06, 0.7, c, 0.02); top.position.y = 0.74; g.add(top);
+    // Drawer block
+    const drawerBlock = meshWood(0.55, 0.6, 0.65, c, 0.015);
+    drawerBlock.position.set(0.5, 0.4, 0); g.add(drawerBlock);
+    const handleM = new THREE.MeshStandardMaterial({ color: 0xd4b860, roughness: 0.2, metalness: 0.85 });
+    for (let i = 0; i < 3; i++) {
+      const drawer = new THREE.Mesh(new RoundedBoxGeometry(0.5, 0.16, 0.03, 2, 0.01), woodMat(c, 0.65));
+      drawer.position.set(0.5, 0.55 - i * 0.18, 0.34); g.add(drawer);
+      const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.12, 12), handleM);
+      handle.rotation.z = Math.PI / 2;
+      handle.position.set(0.5, 0.55 - i * 0.18, 0.36); g.add(handle);
+    }
+    // Tapered legs on the open side
+    const legM = woodMat(c, 0.6);
+    [-0.7, -0.7].forEach((x, i) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.06, 0.7, 8), legM);
+      leg.position.set(x, 0.35, i === 0 ? -0.3 : 0.3); leg.castShadow = true; g.add(leg);
+    });
     return g;
   }},
   coffeeTable: { name: 'Журнальный столик', icon: '☕', price: 10000, color: 0x3a2a1f, build(c) {
     const g = new THREE.Group();
-    const top = meshBox(1, 0.05, 0.6, c); top.position.y = 0.42; g.add(top);
-    const shelf = meshBox(0.95, 0.04, 0.55, c); shelf.position.y = 0.18; g.add(shelf);
-    [-0.42, 0.42].forEach(x => [-0.23, 0.23].forEach(z => { const leg = meshBox(0.06, 0.4, 0.06, c); leg.position.set(x, 0.2, z); g.add(leg); }));
+    // Glass top option — semi-transparent
+    const glassTop = new THREE.Mesh(new RoundedBoxGeometry(1, 0.04, 0.6, 2, 0.01),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.35 }));
+    glassTop.position.y = 0.42; glassTop.castShadow = false; glassTop.receiveShadow = true; g.add(glassTop);
+    // Wooden lower shelf
+    const shelf = meshWood(0.95, 0.04, 0.55, c, 0.012);
+    shelf.position.y = 0.18; g.add(shelf);
+    // Tapered legs
+    const legM = woodMat(c, 0.6);
+    [-0.42, 0.42].forEach(x => [-0.23, 0.23].forEach(z => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.04, 0.4, 8), legM);
+      leg.position.set(x, 0.2, z); leg.castShadow = true; g.add(leg);
+    }));
+    // Decor: book + cup
+    const book = new THREE.Mesh(new RoundedBoxGeometry(0.18, 0.025, 0.13, 2, 0.005), mat(0x8b3a3a, 0.7));
+    book.position.set(-0.2, 0.46, 0.05); book.castShadow = true; g.add(book);
+    const cupBody = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.035, 0.08, 16), mat(0xfafaf5, 0.4));
+    cupBody.position.set(0.15, 0.48, -0.05); cupBody.castShadow = true; g.add(cupBody);
     return g;
   }},
   bookshelf: { name: 'Книжный шкаф', icon: '📚', price: 28000, color: 0x5a4030, build(c) {
     const g = new THREE.Group();
-    const back = meshBox(1.4, 2, 0.05, c); back.position.set(0, 1, -0.18); g.add(back);
-    const sideL = meshBox(0.05, 2, 0.4, c); sideL.position.set(-0.7, 1, 0); g.add(sideL);
+    const woodM = woodMat(c, 0.7);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2, 0.04), woodM);
+    back.position.set(0, 1, -0.18); back.receiveShadow = true; g.add(back);
+    const sideL = new THREE.Mesh(new RoundedBoxGeometry(0.06, 2, 0.4, 2, 0.012), woodM);
+    sideL.position.set(-0.7, 1, 0); sideL.castShadow = true; g.add(sideL);
     const sideR = sideL.clone(); sideR.position.x = 0.7; g.add(sideR);
-    const top = meshBox(1.4, 0.05, 0.4, c); top.position.set(0, 2, 0); g.add(top);
+    const top = new THREE.Mesh(new RoundedBoxGeometry(1.4, 0.06, 0.4, 2, 0.012), woodM);
+    top.position.set(0, 2, 0); top.castShadow = true; g.add(top);
     const bottom = top.clone(); bottom.position.y = 0; g.add(bottom);
+    // Shelves
     for (let i = 1; i < 4; i++) {
-      const shelf = meshBox(1.35, 0.04, 0.38, c); shelf.position.set(0, i * 0.5, 0); g.add(shelf);
+      const shelf = new THREE.Mesh(new RoundedBoxGeometry(1.36, 0.04, 0.38, 2, 0.008), woodM);
+      shelf.position.set(0, i * 0.5, 0); shelf.castShadow = true; shelf.receiveShadow = true; g.add(shelf);
     }
-    const bookColors = [0x8b3a3a, 0x3a5a8b, 0x6b8a4a, 0x8b6b3a, 0x4a3a6b, 0x8b8b3a];
+    // Books with bevelled edges + decor objects
+    const bookColors = [0x8b3a3a, 0x3a5a8b, 0x6b8a4a, 0x8b6b3a, 0x4a3a6b, 0x8b8b3a, 0x6a4a8b, 0x8b5a3a, 0x2a4a3a];
     for (let row = 0; row < 4; row++) {
       let x = -0.62;
-      for (let i = 0; i < 8; i++) {
-        const w = 0.08 + Math.random() * 0.08;
-        const h = 0.3 + Math.random() * 0.12;
-        const book = meshBox(w, h, 0.2, bookColors[Math.floor(Math.random() * bookColors.length)]);
+      // 50/50 chance to leave a gap for decor
+      const decorIndex = Math.random() < 0.4 ? Math.floor(Math.random() * 6) + 2 : -1;
+      for (let i = 0; i < 9 && x < 0.55; i++) {
+        if (i === decorIndex) {
+          // Vase or sphere decoration
+          const decor = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.18, 12),
+            new THREE.MeshStandardMaterial({ color: 0xeae0d0, roughness: 0.3, metalness: 0.1 }));
+          decor.position.set(x + 0.08, row * 0.5 + 0.13, 0.05); decor.castShadow = true; g.add(decor);
+          x += 0.16;
+          continue;
+        }
+        const w = 0.07 + Math.random() * 0.06;
+        const h = 0.28 + Math.random() * 0.14;
+        const tilt = Math.random() < 0.15 ? (Math.random() - 0.5) * 0.3 : 0;
+        const book = new THREE.Mesh(new RoundedBoxGeometry(w, h, 0.2, 2, 0.005),
+          mat(bookColors[Math.floor(Math.random() * bookColors.length)], 0.7));
         book.position.set(x + w / 2, row * 0.5 + h / 2 + 0.04, 0.02);
-        g.add(book);
-        x += w + 0.01;
+        book.rotation.z = tilt;
+        book.castShadow = true; g.add(book);
+        // Spine accent
+        const spine = new THREE.Mesh(new THREE.PlaneGeometry(w * 0.7, h * 0.15),
+          new THREE.MeshBasicMaterial({ color: 0xd4b860 }));
+        spine.position.set(x + w / 2, row * 0.5 + h / 2 + 0.04 + 0.04, 0.12);
+        spine.rotation.z = tilt; g.add(spine);
+        x += w + 0.008;
       }
     }
     return g;
   }},
   dresser: { name: 'Комод', icon: '🗄️', price: 26000, color: 0x6b4a2a, build(c) {
     const g = new THREE.Group();
-    const body = meshBox(1.4, 0.85, 0.5, c); body.position.y = 0.45; g.add(body);
+    const body = meshWood(1.4, 0.85, 0.5, c, 0.02); body.position.y = 0.45; g.add(body);
+    // Top surface (slightly larger overhang)
+    const top = meshWood(1.46, 0.04, 0.54, c, 0.015); top.position.y = 0.89; g.add(top);
+    // Recessed drawer fronts
+    const handleM = new THREE.MeshStandardMaterial({ color: 0xd4b860, roughness: 0.2, metalness: 0.85 });
     for (let i = 0; i < 3; i++) {
-      const drawer = meshBox(1.3, 0.22, 0.04, 0x8b6a4a); drawer.position.set(0, 0.18 + i * 0.27, 0.27); g.add(drawer);
-      [-0.3, 0.3].forEach(x => { const knob = meshCyl(0.04, 0.04, 0.08, 0xd4b860, 12); knob.rotation.x = Math.PI / 2; knob.position.set(x, 0.18 + i * 0.27, 0.32); g.add(knob); });
+      const drawer = new THREE.Mesh(new RoundedBoxGeometry(1.34, 0.23, 0.03, 2, 0.008), woodMat(c, 0.6));
+      drawer.position.set(0, 0.18 + i * 0.26, 0.265); drawer.castShadow = true; g.add(drawer);
+      // Two handles per drawer
+      [-0.3, 0.3].forEach(x => {
+        const handle = new THREE.Mesh(new THREE.TorusGeometry(0.04, 0.012, 8, 16, Math.PI), handleM);
+        handle.rotation.set(Math.PI, 0, 0);
+        handle.position.set(x, 0.18 + i * 0.26, 0.29); g.add(handle);
+        // Handle attach points
+        [-0.04, 0.04].forEach(dx => {
+          const peg = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.025, 8), handleM);
+          peg.rotation.x = Math.PI / 2;
+          peg.position.set(x + dx, 0.18 + i * 0.26, 0.28); g.add(peg);
+        });
+      });
     }
+    // Tapered short legs
+    const legM = woodMat(c, 0.6);
+    [-0.6, 0.6].forEach(x => [-0.22, 0.22].forEach(z => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.1, 8), legM);
+      leg.position.set(x, 0.05, z); leg.castShadow = true; g.add(leg);
+    }));
     return g;
   }},
   mirror: { name: 'Зеркало', icon: '🪞', price: 9000, color: 0xd4b860, build(c) {
@@ -2700,8 +3048,12 @@ function initPreview() {
   previewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   previewRenderer.shadowMap.enabled = true;
   previewRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  previewRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  previewRenderer.toneMappingExposure = 1.05;
+  previewRenderer.outputColorSpace = THREE.SRGBColorSpace;
 
   previewScene = new THREE.Scene();
+  previewScene.environment = envTex;
   previewScene.add(new THREE.AmbientLight(0xffffff, 0.7));
   const sun2 = new THREE.DirectionalLight(0xffe8c4, 0.8);
   sun2.position.set(4, 6, 4); sun2.castShadow = true;
