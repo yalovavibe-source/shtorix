@@ -85,27 +85,80 @@
     z-index: 2;
   }
 
-  /* ===== AUDIO TOGGLE ===== */
-  .audio-toggle {
+  /* ===== AUDIO CONTROLS ===== */
+  .sound-row {
     position: fixed;
-    bottom: 100px;
     right: 30px;
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+  }
+  .sound-row .vol-pop {
+    width: 0;
+    overflow: hidden;
+    transition: width 0.35s, margin-right 0.35s;
+    margin-right: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    border: 1px solid rgba(212,184,96,0.3);
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0;
+  }
+  .sound-row:hover .vol-pop {
+    width: 130px;
+    margin-right: 10px;
+    padding: 0 14px;
+  }
+  .sound-row .vol-pop input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(212,184,96,0.3);
+    outline: none;
+    cursor: pointer;
+  }
+  .sound-row .vol-pop input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: 2px solid var(--bg-mid);
+  }
+  .sound-row .vol-pop input[type="range"]::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--gold);
+    cursor: pointer;
+    border: 2px solid var(--bg-mid);
+  }
+
+  .audio-toggle, .rain-toggle, .sea-toggle, .wood-toggle {
     width: 48px;
     height: 48px;
     border-radius: 50%;
     background: rgba(31,77,46,0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(212,184,96,0.4);
-    color: var(--gold);
     font-size: 1.3rem;
     cursor: pointer;
-    z-index: 90;
     transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--gold);
+    position: relative;
   }
-  .audio-toggle:hover { transform: scale(1.1); border-color: var(--gold); }
+  .audio-toggle:hover, .rain-toggle:hover, .sea-toggle:hover, .wood-toggle:hover {
+    transform: scale(1.1); border-color: var(--gold);
+  }
   .audio-toggle.muted { color: #888; }
   .audio-toggle.muted::after {
     content: '';
@@ -115,30 +168,21 @@
     background: #ff5050;
     transform: rotate(-45deg);
   }
-  .rain-toggle {
-    position: fixed;
-    bottom: 158px;
-    right: 30px;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: rgba(31,77,46,0.7);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(212,184,96,0.4);
-    color: #888;
-    font-size: 1.3rem;
-    cursor: pointer;
-    z-index: 90;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .rain-toggle:hover { transform: scale(1.1); border-color: var(--gold); }
+  .rain-toggle, .sea-toggle, .wood-toggle { color: #888; }
   .rain-toggle.active {
     color: #6ba0c0;
     border-color: #6ba0c0;
     box-shadow: 0 0 18px rgba(107,160,192,0.4);
+  }
+  .sea-toggle.active {
+    color: #4a9ac4;
+    border-color: #4a9ac4;
+    box-shadow: 0 0 18px rgba(74,154,196,0.4);
+  }
+  .wood-toggle.active {
+    color: #c4924a;
+    border-color: #c4924a;
+    box-shadow: 0 0 18px rgba(196,146,74,0.3);
   }
 
   /* ===== ANIMATED BUTTONS ===== */
@@ -2271,8 +2315,22 @@
 </div>
 
 <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Наверх">↑</button>
-<button class="audio-toggle" id="audioToggle" title="Включить/выключить звуки" aria-label="Звук">🔊</button>
-<button class="rain-toggle" id="rainToggle" title="Дождь" aria-label="Дождь">🌧️</button>
+<div class="sound-row" style="bottom: 100px">
+  <button class="audio-toggle" id="audioToggle" title="Звук + птицы" aria-label="Звук">🔊</button>
+  <div class="vol-pop"><input type="range" id="masterVol" min="0" max="100" value="100" title="Громкость птиц"></div>
+</div>
+<div class="sound-row" style="bottom: 158px">
+  <button class="rain-toggle" id="rainToggle" title="Дождь" aria-label="Дождь">🌧️</button>
+  <div class="vol-pop"><input type="range" id="rainVol" min="0" max="100" value="60" title="Громкость дождя"></div>
+</div>
+<div class="sound-row" style="bottom: 216px">
+  <button class="sea-toggle" id="seaToggle" title="Море" aria-label="Море">🌊</button>
+  <div class="vol-pop"><input type="range" id="seaVol" min="0" max="100" value="60" title="Громкость моря"></div>
+</div>
+<div class="sound-row" style="bottom: 274px">
+  <button class="wood-toggle active" id="woodToggle" title="Скрип дерева при перетаскивании" aria-label="Дерево">🪵</button>
+  <div class="vol-pop"><input type="range" id="woodVol" min="0" max="100" value="80" title="Громкость скрипа"></div>
+</div>
 
 <footer>
   <p>SHTORIX · shtorix.com · Мебель, интерьер и AI-дизайн</p>
@@ -4890,6 +4948,21 @@ let audioOn = localStorage.getItem('shtorix_audio_off') !== '1';
 let birdTimer = null;
 let lastWoodTime = 0;
 
+// Per-channel volumes (0..1)
+const vols = {
+  birds: clamp01(parseFloat(localStorage.getItem('shtorix_vol_master')) / 100, 1.0),
+  rain:  clamp01(parseFloat(localStorage.getItem('shtorix_vol_rain'))   / 100, 0.6),
+  sea:   clamp01(parseFloat(localStorage.getItem('shtorix_vol_sea'))    / 100, 0.6),
+  wood:  clamp01(parseFloat(localStorage.getItem('shtorix_vol_wood'))   / 100, 0.8)
+};
+let woodOn = localStorage.getItem('shtorix_wood_off') !== '1';
+function clamp01(v, def) {
+  if (isNaN(v)) return def;
+  return Math.max(0, Math.min(1, v));
+}
+const RAIN_BASE = 0.22;
+const SEA_BASE = 0.18;
+
 function getCtx() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -4899,9 +4972,9 @@ function getCtx() {
 }
 
 function playWoodSound() {
-  if (!audioOn) return;
+  if (!audioOn || !woodOn || vols.wood <= 0) return;
   const now = performance.now();
-  if (now - lastWoodTime < 90) return; // throttle
+  if (now - lastWoodTime < 90) return;
   lastWoodTime = now;
   const ctx = getCtx();
   const t = ctx.currentTime;
@@ -4923,14 +4996,14 @@ function playWoodSound() {
   filter.Q.value = 2.5;
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(0.25, t + 0.005);
+  gain.gain.linearRampToValueAtTime(0.25 * vols.wood, t + 0.005);
   gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
   src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
   src.start(t); src.stop(t + dur);
 }
 
 function playBirdChirp() {
-  if (!audioOn) return;
+  if (!audioOn || vols.birds <= 0) return;
   const ctx = getCtx();
   const t = ctx.currentTime;
   const osc = ctx.createOscillator();
@@ -4942,7 +5015,7 @@ function playBirdChirp() {
   osc.frequency.exponentialRampToValueAtTime(base * 0.55, t + dur);
   const gain = ctx.createGain();
   gain.gain.setValueAtTime(0, t);
-  gain.gain.linearRampToValueAtTime(0.06, t + 0.015);
+  gain.gain.linearRampToValueAtTime(0.06 * vols.birds, t + 0.015);
   gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
   osc.connect(gain); gain.connect(ctx.destination);
   osc.start(t); osc.stop(t + dur + 0.05);
@@ -4982,9 +5055,11 @@ audioBtn.addEventListener('click', () => {
     playBirdChirp();
     scheduleBirds();
     if (rainOn) startRain();
+    if (seaOn) startSea();
   } else {
     if (birdTimer) { clearTimeout(birdTimer); birdTimer = null; }
     stopRain();
+    stopSea();
   }
 });
 
@@ -5025,7 +5100,7 @@ function startRain() {
   peak.Q.value = 0.6;
   rainGain = ctx.createGain();
   rainGain.gain.setValueAtTime(0, ctx.currentTime);
-  rainGain.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 1.2);
+  rainGain.gain.linearRampToValueAtTime(RAIN_BASE * vols.rain, ctx.currentTime + 1.2);
   rainSrc.connect(hp); hp.connect(lp); lp.connect(peak); peak.connect(rainGain);
   rainGain.connect(ctx.destination);
   rainSrc.start();
@@ -5097,6 +5172,178 @@ rainBtn.addEventListener('click', () => {
   }
 });
 
+// ============ SEA / OCEAN ============
+let seaOn = localStorage.getItem('shtorix_sea_on') === '1';
+let seaSrc = null, seaGain = null, seaLfoTimer = null;
+
+function startSea() {
+  if (seaSrc || !audioOn) return;
+  const ctx = getCtx();
+  // 6-second loop of brown-ish noise (deeper than rain)
+  const dur = 6;
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    let last = 0, last2 = 0;
+    for (let i = 0; i < len; i++) {
+      const r = Math.random() * 2 - 1;
+      // Heavier integration for brown noise (deeper, "watery")
+      last = (last + 0.02 * r) / 1.02;
+      last2 = (last2 + 0.05 * last) / 1.05;
+      data[i] = last2 * 6 + r * 0.18;
+    }
+  }
+  seaSrc = ctx.createBufferSource();
+  seaSrc.buffer = buffer;
+  seaSrc.loop = true;
+  // Filter chain — deeper than rain
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 80;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 1800;
+  // Boost low-mid for "wave body"
+  const peak = ctx.createBiquadFilter();
+  peak.type = 'peaking';
+  peak.frequency.value = 350; peak.gain.value = 4; peak.Q.value = 0.7;
+  // Master gain (the LFO modulates this)
+  seaGain = ctx.createGain();
+  seaGain.gain.setValueAtTime(0, ctx.currentTime);
+  seaGain.gain.linearRampToValueAtTime(SEA_BASE * vols.sea, ctx.currentTime + 1.5);
+  // Volume LFO for wave swell (~10 sec period)
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.1; // 1 cycle per 10 seconds
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = 0.08; // depth of swell
+  lfo.connect(lfoGain);
+  lfoGain.connect(seaGain.gain);
+  lfo.start();
+  seaSrc.connect(hp); hp.connect(lp); lp.connect(peak); peak.connect(seaGain);
+  seaGain.connect(ctx.destination);
+  seaSrc.start();
+  // Foam/spray bursts
+  scheduleSeaFoam();
+  seaLfo = lfo;
+}
+let seaLfo = null;
+
+function playSeaFoam() {
+  if (!seaOn || !audioOn) return;
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+  const dur = 1.2 + Math.random() * 0.8;
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  // Filter for foam (high frequencies)
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 1500;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 4500;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.05 + Math.random() * 0.04, t + 0.4);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(ctx.destination);
+  src.start(t); src.stop(t + dur);
+}
+
+function scheduleSeaFoam() {
+  if (seaLfoTimer) clearTimeout(seaLfoTimer);
+  if (!seaOn || !audioOn) return;
+  // Foam crash every 6-12 seconds (matching wave swells)
+  const next = 6000 + Math.random() * 6000;
+  seaLfoTimer = setTimeout(() => {
+    playSeaFoam();
+    scheduleSeaFoam();
+  }, next);
+}
+
+function stopSea() {
+  if (seaLfoTimer) { clearTimeout(seaLfoTimer); seaLfoTimer = null; }
+  if (!seaSrc) return;
+  const ctx = getCtx();
+  try { seaGain.gain.cancelScheduledValues(ctx.currentTime); } catch {}
+  seaGain.gain.setValueAtTime(seaGain.gain.value, ctx.currentTime);
+  seaGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
+  const src = seaSrc, lfo = seaLfo;
+  setTimeout(() => {
+    try { src.stop(); } catch {}
+    try { if (lfo) lfo.stop(); } catch {}
+  }, 1100);
+  seaSrc = null; seaGain = null; seaLfo = null;
+}
+
+const seaBtn = document.getElementById('seaToggle');
+function refreshSeaBtn() {
+  if (seaOn) seaBtn.classList.add('active');
+  else seaBtn.classList.remove('active');
+}
+refreshSeaBtn();
+
+seaBtn.addEventListener('click', () => {
+  seaOn = !seaOn;
+  localStorage.setItem('shtorix_sea_on', seaOn ? '1' : '0');
+  refreshSeaBtn();
+  if (seaOn) {
+    if (!audioOn) {
+      audioOn = true;
+      localStorage.setItem('shtorix_audio_off', '0');
+      refreshAudioBtn();
+    }
+    getCtx();
+    startSea();
+  } else {
+    stopSea();
+  }
+});
+
+// ============ Wood toggle (drag sound on/off) ============
+const woodBtn = document.getElementById('woodToggle');
+function refreshWoodBtn() { if (woodOn) woodBtn.classList.add('active'); else woodBtn.classList.remove('active'); }
+refreshWoodBtn();
+woodBtn.addEventListener('click', () => {
+  woodOn = !woodOn;
+  localStorage.setItem('shtorix_wood_off', woodOn ? '0' : '1');
+  refreshWoodBtn();
+});
+
+// ============ Volume sliders ============
+function setupVolSlider(id, key, applyLive) {
+  const el = document.getElementById(id);
+  el.value = Math.round((vols[key] || 0) * 100);
+  el.addEventListener('input', (e) => {
+    const v = clamp01(parseInt(e.target.value, 10) / 100, 0);
+    vols[key] = v;
+    localStorage.setItem('shtorix_vol_' + (key === 'birds' ? 'master' : key), e.target.value);
+    if (applyLive) applyLive(v);
+  });
+  // Don't trigger button click when interacting with slider
+  el.addEventListener('click', e => e.stopPropagation());
+  el.addEventListener('pointerdown', e => e.stopPropagation());
+}
+
+setupVolSlider('masterVol', 'birds');
+setupVolSlider('rainVol', 'rain', (v) => {
+  if (rainGain) {
+    const ctx = getCtx();
+    rainGain.gain.cancelScheduledValues(ctx.currentTime);
+    rainGain.gain.linearRampToValueAtTime(RAIN_BASE * v, ctx.currentTime + 0.15);
+  }
+});
+setupVolSlider('seaVol', 'sea', (v) => {
+  if (seaGain) {
+    const ctx = getCtx();
+    seaGain.gain.cancelScheduledValues(ctx.currentTime);
+    seaGain.gain.linearRampToValueAtTime(SEA_BASE * v, ctx.currentTime + 0.15);
+  }
+});
+setupVolSlider('woodVol', 'wood');
+
 // Auto-start audio on first interaction (browsers require user gesture)
 let audioStarted = false;
 function startAudioOnce() {
@@ -5106,6 +5353,7 @@ function startAudioOnce() {
     getCtx();
     setTimeout(() => { playBirdChirp(); scheduleBirds(); }, 800);
     if (rainOn) setTimeout(startRain, 600);
+    if (seaOn) setTimeout(startSea, 700);
   }
 }
 window.addEventListener('pointerdown', startAudioOnce, { once: true });
