@@ -1313,6 +1313,136 @@
     .ai-result { min-height: 350px; }
   }
 
+  /* ===== ROOMS FEED ===== */
+  .feed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 22px;
+  }
+  .feed-card {
+    background: var(--bg-mid);
+    border: 1px solid rgba(212,184,96,0.2);
+    border-radius: 18px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: var(--shadow);
+  }
+  .feed-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--gold);
+    box-shadow: 0 25px 60px rgba(212,184,96,0.25);
+  }
+  .feed-thumb {
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    background-color: #1a2520;
+    position: relative;
+    cursor: pointer;
+  }
+  .feed-thumb::after {
+    content: '🔍';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.5);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 2.5rem;
+  }
+  .feed-thumb:hover::after { opacity: 1; }
+  .feed-body { padding: 18px 20px; }
+  .feed-body h4 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.15rem;
+    margin-bottom: 10px;
+  }
+  .feed-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    opacity: 0.8;
+    margin-bottom: 6px;
+  }
+  .feed-meta .feed-price {
+    color: var(--gold);
+    font-weight: 600;
+  }
+  .feed-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .feed-btn {
+    padding: 9px 14px;
+    border-radius: 30px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border: 1px solid rgba(212,184,96,0.3);
+    background: transparent;
+    color: var(--cream);
+    transition: all 0.3s;
+  }
+  .feed-btn.load {
+    flex: 1;
+    background: rgba(212,184,96,0.18);
+    color: var(--gold);
+    border-color: rgba(212,184,96,0.5);
+  }
+  .feed-btn.load:hover {
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .feed-btn.icon {
+    width: 38px;
+    padding: 9px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feed-btn.delete:hover { background: #ff5050; border-color: #ff5050; color: white; }
+  .feed-btn.download:hover { background: rgba(212,184,96,0.25); border-color: var(--gold); color: var(--gold); }
+
+  .feed-empty {
+    text-align: center;
+    padding: 60px 20px;
+    background: rgba(0,0,0,0.2);
+    border: 2px dashed rgba(212,184,96,0.3);
+    border-radius: 18px;
+    color: var(--cream);
+    opacity: 0.7;
+  }
+  .feed-empty .empty-icon { font-size: 4rem; display: block; margin-bottom: 15px; }
+  .feed-empty p { margin: 6px 0; }
+
+  .feed-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: linear-gradient(135deg, #2a4a32, #1f4d2e);
+    color: var(--gold);
+    padding: 14px 28px;
+    border-radius: 50px;
+    border: 1px solid var(--gold);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+    z-index: 3000;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+  }
+  .feed-toast.show { transform: translateX(-50%) translateY(0); }
+
   /* Order modal form */
   .form-grid {
     display: grid;
@@ -1527,11 +1657,28 @@
         <div class="cart-actions">
           <button class="order-btn" id="orderBtn">Оформить с доставкой</button>
           <button class="pay-mtc-btn" id="payMtcBtn">🪙 Быстрая покупка</button>
-          <button class="clear-btn save-btn" id="saveBtn">📸 Сохранить интерьер</button>
+          <button class="clear-btn save-btn" id="saveBtn">📁 Сохранить в ленту</button>
           <button class="clear-btn" id="clearBtn">Очистить</button>
         </div>
       </div>
     </aside>
+  </div>
+</section>
+
+<!-- ROOMS FEED -->
+<section class="section" id="feed-section">
+  <div class="section-header">
+    <span class="section-tag">Лента</span>
+    <h2 class="section-title">Мои Комнаты</h2>
+    <p class="section-desc">Все ваши сохранённые интерьеры. Загружайте обратно в конструктор одним кликом, скачивайте как картинку или удаляйте ненужное.</p>
+  </div>
+  <div id="feedContent">
+    <div class="feed-empty" id="feedEmpty">
+      <span class="empty-icon">🏠</span>
+      <p><strong>Пока ничего не сохранено</strong></p>
+      <p style="font-size:0.9rem">Соберите интерьер в 3D-конструкторе выше и нажмите «📁 Сохранить в ленту»</p>
+    </div>
+    <div class="feed-grid" id="feedGrid"></div>
   </div>
 </section>
 
@@ -2439,6 +2586,113 @@ window.payWithMtc = function(items, totalRub) {
 };
 
 MTC.init();
+
+// ===== ROOMS FEED =====
+const ROOMS_KEY = 'shtorix_rooms';
+function getRooms() {
+  try { return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]'); }
+  catch { return []; }
+}
+function saveRoomsList(rooms) {
+  localStorage.setItem(ROOMS_KEY, JSON.stringify(rooms));
+}
+
+function showFeedToast(msg, icon = '📁') {
+  const toast = document.createElement('div');
+  toast.className = 'feed-toast';
+  toast.innerHTML = `<span style="font-size:1.3rem">${icon}</span> ${msg}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.classList.add('show'), 50);
+  setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 2800);
+}
+
+window.saveToFeed = function(state, thumbnail) {
+  const rooms = getRooms();
+  const id = 'room_' + Date.now();
+  const date = new Date().toISOString();
+  const counter = rooms.length + 1;
+  const name = `Интерьер №${counter}`;
+  const room = { id, name, date, thumbnail, ...state };
+  rooms.unshift(room);
+  // Cap at 30 to keep storage size reasonable
+  while (rooms.length > 30) rooms.pop();
+  try {
+    saveRoomsList(rooms);
+  } catch (e) {
+    while (rooms.length > 5) {
+      rooms.pop();
+      try { saveRoomsList(rooms); break; } catch {}
+    }
+  }
+  renderFeed();
+  showFeedToast('Сохранено в ленту');
+  setTimeout(() => {
+    document.getElementById('feed-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 300);
+};
+
+function renderFeed() {
+  const grid = document.getElementById('feedGrid');
+  const empty = document.getElementById('feedEmpty');
+  const rooms = getRooms();
+  if (rooms.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = rooms.map(room => {
+    const date = new Date(room.date).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const price = (room.totalPrice || 0).toLocaleString('ru-RU');
+    return `
+      <div class="feed-card" data-id="${room.id}">
+        <div class="feed-thumb" style="background-image:url('${room.thumbnail}')" onclick="openLightbox('${room.thumbnail.replace(/'/g, "\\'")}')"></div>
+        <div class="feed-body">
+          <h4>${room.name}</h4>
+          <div class="feed-meta">
+            <span>📅 ${date}</span>
+            <span class="feed-price">🪙 ${price} MTC</span>
+          </div>
+          <div class="feed-meta"><span>📦 ${room.itemCount || 0} предметов</span></div>
+          <div class="feed-actions">
+            <button class="feed-btn load" onclick="loadFromFeed('${room.id}')">↻ Загрузить</button>
+            <button class="feed-btn icon download" onclick="downloadFromFeed('${room.id}')" title="Скачать">⬇</button>
+            <button class="feed-btn icon delete" onclick="deleteFromFeed('${room.id}')" title="Удалить">✕</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.loadFromFeed = function(id) {
+  const room = getRooms().find(r => r.id === id);
+  if (!room || !window.loadRoom) return;
+  window.loadRoom(room);
+  showFeedToast('Интерьер загружен в конструктор', '↻');
+  setTimeout(() => {
+    document.getElementById('builder-section').scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+};
+
+window.deleteFromFeed = function(id) {
+  if (!confirm('Удалить этот интерьер из ленты?')) return;
+  const rooms = getRooms().filter(r => r.id !== id);
+  saveRoomsList(rooms);
+  renderFeed();
+  showFeedToast('Удалено', '✕');
+};
+
+window.downloadFromFeed = function(id) {
+  const room = getRooms().find(r => r.id === id);
+  if (!room) return;
+  const a = document.createElement('a');
+  a.href = room.thumbnail;
+  a.download = `shtorix-${room.name.replace(/\s+/g, '-')}.jpg`;
+  a.click();
+};
+
+renderFeed();
 
 // ===== ORDER MODAL =====
 function openOrderModal() {
@@ -3793,24 +4047,61 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   while (placed.length) removeItem(placed[0]);
 });
 
-// Save snapshot — re-render at high resolution and trigger download
+// Save snapshot to feed
+function serializeRoom() {
+  return {
+    items: placed.map(p => ({
+      type: p.type,
+      color: p.color,
+      x: p.group.position.x, y: p.group.position.y, z: p.group.position.z,
+      rotY: p.group.rotation.y
+    })),
+    walls: '#' + wallMat.color.getHexString(),
+    floor: '#' + floorMat.color.getHexString(),
+    totalPrice: placed.reduce((s, p) => s + p.price, 0) + 2500,
+    itemCount: placed.length
+  };
+}
+
+window.loadRoom = function(state) {
+  while (placed.length) removeItem(placed[0]);
+  if (state.walls) {
+    wallMat.color.set(state.walls);
+    document.getElementById('wallColor').value = state.walls;
+  }
+  if (state.floor) {
+    floorMat.color.set(state.floor);
+    document.getElementById('floorColor').value = state.floor;
+  }
+  (state.items || []).forEach(it => {
+    addItem(it.type);
+    const item = placed[placed.length - 1];
+    item.group.position.set(it.x || 0, it.y || 0, it.z || 0);
+    item.group.rotation.y = it.rotY || 0;
+    if (it.color != null) setItemColor(item, '#' + new THREE.Color(it.color).getHexString());
+  });
+  selectItem(null);
+  updateCart();
+};
+
 document.getElementById('saveBtn').addEventListener('click', () => {
-  // Hide selection ring temporarily
+  if (placed.length === 0) {
+    alert('Добавьте мебель в комнату — потом сохраним.');
+    return;
+  }
   const ringWasVisible = selectionRing.visible;
   selectionRing.visible = false;
 
-  const W = wrap.clientWidth;
-  const H = wrap.clientHeight;
-  // Render at 2x for sharper screenshot
-  const SCALE = 2;
-  renderer.setSize(W * SCALE, H * SCALE, false);
-  camera.aspect = W / H; camera.updateProjectionMatrix();
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  // Render thumbnail at 800x600, JPEG to keep storage small
+  renderer.setSize(800, 600, false);
+  camera.aspect = 800 / 600; camera.updateProjectionMatrix();
   renderer.render(scene, camera);
+  const thumb = renderer.domElement.toDataURL('image/jpeg', 0.78);
 
-  const dataUrl = renderer.domElement.toDataURL('image/png');
-
-  // Restore size
+  // Restore canvas size
   renderer.setSize(W, H, false);
+  camera.aspect = W / H; camera.updateProjectionMatrix();
   selectionRing.visible = ringWasVisible;
 
   // Flash effect
@@ -3819,11 +4110,8 @@ document.getElementById('saveBtn').addEventListener('click', () => {
   wrap.appendChild(flash);
   setTimeout(() => flash.remove(), 500);
 
-  // Download
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = `shtorix-interior-${Date.now()}.png`;
-  a.click();
+  const state = serializeRoom();
+  if (window.saveToFeed) window.saveToFeed(state, thumb);
 });
 
 document.getElementById('orderBtn').addEventListener('click', () => {
