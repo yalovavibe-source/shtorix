@@ -570,6 +570,64 @@
     inset: 0;
     background: linear-gradient(180deg, transparent 30%, var(--bg-mid) 100%);
   }
+  .preview-3d {
+    position: relative;
+    height: 320px;
+    background: radial-gradient(ellipse at center, #2a3a30 0%, #0f1814 100%);
+    border-radius: 16px;
+    margin: 0 0 25px 0;
+    overflow: hidden;
+    border: 1px solid rgba(212,184,96,0.25);
+  }
+  .preview-3d canvas { display: block; width: 100%; height: 100%; }
+  .preview-3d .preview-hint {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    color: var(--cream);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    pointer-events: none;
+    border: 1px solid rgba(212,184,96,0.3);
+  }
+  .preview-3d .preview-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+  .preview-3d .add-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 30px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(212,184,96,0.4);
+    transition: transform 0.3s;
+  }
+  .preview-3d .add-btn:hover { transform: translateY(-2px) scale(1.04); }
   .close-btn {
     position: absolute;
     top: 20px;
@@ -1071,7 +1129,11 @@
     <aside class="builder-sidebar">
       <h4>Каталог</h4>
       <button class="item-btn" data-add="sofa"><span class="ico">🛋️</span>Диван<span class="price">45 000 ₽</span></button>
+      <button class="item-btn" data-add="cornerSofa"><span class="ico">🛋️</span>Угловой диван<span class="price">68 000 ₽</span></button>
+      <button class="item-btn" data-add="sofaBed"><span class="ico">🛌</span>Диван-кровать<span class="price">52 000 ₽</span></button>
       <button class="item-btn" data-add="armchair"><span class="ico">💺</span>Кресло<span class="price">18 000 ₽</span></button>
+      <button class="item-btn" data-add="pouf"><span class="ico">⚪</span>Пуф<span class="price">5 500 ₽</span></button>
+      <button class="item-btn" data-add="barStool"><span class="ico">🍸</span>Барный стул<span class="price">8 500 ₽</span></button>
       <button class="item-btn" data-add="table"><span class="ico">🍽️</span>Стол<span class="price">25 000 ₽</span></button>
       <button class="item-btn" data-add="chair"><span class="ico">🪑</span>Стул<span class="price">6 000 ₽</span></button>
       <button class="item-btn" data-add="wardrobe"><span class="ico">🚪</span>Шкаф<span class="price">35 000 ₽</span></button>
@@ -1082,7 +1144,10 @@
       <button class="item-btn" data-add="bookshelf"><span class="ico">📚</span>Книжный шкаф<span class="price">28 000 ₽</span></button>
       <button class="item-btn" data-add="dresser"><span class="ico">🗄️</span>Комод<span class="price">26 000 ₽</span></button>
       <button class="item-btn" data-add="mirror"><span class="ico">🪞</span>Зеркало<span class="price">9 000 ₽</span></button>
+      <button class="item-btn" data-add="vanity"><span class="ico">💄</span>Туалетный столик<span class="price">19 000 ₽</span></button>
       <button class="item-btn" data-add="nightstand"><span class="ico">🕯️</span>Тумбочка<span class="price">7 500 ₽</span></button>
+      <button class="item-btn" data-add="coatRack"><span class="ico">🧥</span>Вешалка<span class="price">5 000 ₽</span></button>
+      <button class="item-btn" data-add="curtain"><span class="ico">🪟</span>Шторы<span class="price">7 000 ₽</span></button>
       <button class="item-btn" data-add="tv"><span class="ico">📺</span>ТВ-тумба<span class="price">15 000 ₽</span></button>
       <button class="item-btn" data-add="lamp"><span class="ico">💡</span>Торшер<span class="price">8 000 ₽</span></button>
       <button class="item-btn" data-add="ceilingLamp"><span class="ico">🔆</span>Люстра<span class="price">11 000 ₽</span></button>
@@ -1172,6 +1237,12 @@
     <div class="modal-body">
       <h2 id="modalTitle"></h2>
       <p class="latin-name" id="modalLatin"></p>
+      <div class="preview-3d" id="preview3D" style="display:none">
+        <span class="preview-tag">3D-просмотр</span>
+        <span class="preview-hint">Перетащите, чтобы повернуть</span>
+        <canvas id="previewCanvas"></canvas>
+        <button class="add-btn" id="previewAddBtn">+ В мою комнату</button>
+      </div>
       <p class="description" id="modalDesc"></p>
       <div class="info-grid" id="modalInfo"></div>
       <h3 class="gallery-title">📸 Реальные Фотографии</h3>
@@ -1234,6 +1305,7 @@ const crocodiles = [
     name: "Шторы",
     latin: "Окно и свет",
     tags: ["window", "decor"],
+    model: "curtain",
     short: "Граница между домом и миром. Регулируют свет, тепло и настроение.",
     description: "Шторы — это первое, что встречает утренний свет, и последнее, что закрывает день. От лёгкого тюля, играющего в потоках воздуха, до тяжёлых бархатных портьер, придающих комнате торжественность — текстиль на окне формирует атмосферу комнаты сильнее любого другого предмета. Грамотно подобранные занавеси регулируют освещение, скрадывают звуки и визуально вытягивают пространство.",
     badge: "Классика интерьера",
@@ -1250,6 +1322,7 @@ const crocodiles = [
     name: "Диван",
     latin: "Гостиная и комфорт",
     tags: ["seating"],
+    model: "sofa",
     short: "Сердце гостиной. Вокруг него собирается семья и встречаются друзья.",
     description: "Диван — главный элемент гостиной, центр притяжения дома. Современные модели сочетают в себе скульптурную форму и спальное место: модульные системы перестраиваются под настроение, угловые конфигурации вписываются в любую планировку. Натуральная кожа стареет благородно, рогожка дышит, велюр добавляет тактильности. Хороший диван — это партнёр на десятилетия.",
     badge: "Бестселлер",
@@ -1266,6 +1339,7 @@ const crocodiles = [
     name: "Кресло",
     latin: "Личное пространство",
     tags: ["seating"],
+    model: "armchair",
     short: "Уютный остров, где можно укрыться с книгой и чашкой чая.",
     description: "Кресло — самый личный предмет в доме. В отличие от дивана, оно создаёт уединение: сюда садятся, чтобы побыть наедине с мыслями, прочесть главу или просто помолчать. От классических винтажных fauteuil с резными ножками до современных коконов с обтекаемой формой — кресло всегда отражает характер владельца. Поставленное в угол с торшером, оно превращает любую комнату в кабинет.",
     badge: "Икона дизайна",
@@ -1282,6 +1356,7 @@ const crocodiles = [
     name: "Обеденный стол",
     latin: "Семейный очаг",
     tags: ["tables"],
+    model: "table",
     short: "Место, где встречаются завтраки, разговоры и долгие ужины.",
     description: "Стол — это место для встреч. За ним обсуждают планы, решают важное, делят хлеб и чай. Дубовый массив с живыми сучками или гладкая плита из мрамора, круглый для тёплых разговоров или прямоугольный для торжеств — выбор стола задаёт ритм жизни в доме. Раздвижные модели подстраиваются под количество гостей; кухонные островы превращают приготовление еды в общий ритуал.",
     badge: "Сердце дома",
@@ -1298,6 +1373,7 @@ const crocodiles = [
     name: "Стул",
     latin: "Базовый элемент",
     tags: ["seating"],
+    model: "chair",
     short: "Простая форма, в которой умещается вся история дизайна.",
     description: "Стул — самый универсальный предмет мебели и при этом самый сложный для дизайнера. Тысячи моделей, от венского гнутого стула Тонета до пластиковой Panton Chair Вернера Пантона, доказывают: в стуле помещается целая эпоха. Стулья на кухне, в гостиной у обеденного стола, в кабинете — каждый раз другая роль, но всегда первоочередная задача: выдержать тело человека удобно и красиво.",
     badge: "Универсальный",
@@ -1314,6 +1390,7 @@ const crocodiles = [
     name: "Шкаф",
     latin: "Хранение и порядок",
     tags: ["storage"],
+    model: "wardrobe",
     short: "Вертикальное пространство для всего, что должно быть под рукой.",
     description: "Шкаф решает главную проблему квартиры — где всё хранить. От антикварных кас XIX века с резными фронтонами до раздвижных систем во всю стену — мебель для хранения всегда отражала эпоху и образ жизни. Современные шкафы-купе экономят место, открытые стеллажи делают вещи частью декора, а зеркальные фасады визуально удваивают комнату. Хороший шкаф проектируется под человека, а не наоборот.",
     badge: "Функциональный",
@@ -1330,6 +1407,7 @@ const crocodiles = [
     name: "Кровать",
     latin: "Спальня и сон",
     tags: ["bedroom"],
+    model: "bed",
     short: "Треть жизни мы проводим здесь — выбор кровати важнее, чем кажется.",
     description: "Кровать — это не просто мебель, а инструмент для качественного сна. Высокое изголовье из мягкого велюра, ортопедическое основание из ламелей, матрас с правильной поддержкой позвоночника — всё работает на восстановление тела. От минималистичных платформ до пышных кроватей с балдахином: спальня — самое личное пространство дома, и кровать в ней — главная героиня.",
     badge: "Премиум",
@@ -1346,6 +1424,7 @@ const crocodiles = [
     name: "Письменный стол",
     latin: "Кабинет и работа",
     tags: ["tables", "office"],
+    model: "desk",
     short: "Рабочее место, где рождаются идеи и записываются мысли.",
     description: "Письменный стол — пространство концентрации. От строгих столов с множеством ящиков для бумаг до минималистичных современных моделей с кабель-менеджментом и подъёмным механизмом — мебель для работы должна быть функциональной без компромиссов. Ширина столешницы 120–160 см, высота 72–75 см, удобное место под клавиатуру и монитор — это базовые требования для долгих часов сосредоточенной работы.",
     badge: "Для кабинета",
@@ -1362,6 +1441,7 @@ const crocodiles = [
     name: "Журнальный столик",
     latin: "Гостиная-акцент",
     tags: ["tables", "decor"],
+    model: "coffeeTable",
     short: "Низкий столик у дивана для книг, чая и хорошего настроения.",
     description: "Журнальный столик — компаньон дивана и хранитель уютных вечеров. Здесь стоят чашки кофе, лежат книги, журналы и пульт. Стеклянная столешница на металлических ножках добавит лёгкости интерьеру; массив дерева — фактуры; модели с нишами и ящиками — функциональности. Высота обычно 35–45 см, чтобы было удобно дотянуться сидя на диване.",
     badge: "Гостиная",
@@ -1378,6 +1458,7 @@ const crocodiles = [
     name: "Книжный шкаф",
     latin: "Библиотека дома",
     tags: ["storage"],
+    model: "bookshelf",
     short: "Книги — лучший интерьер. Полки придают комнате характер.",
     description: "Книжный шкаф — это не только хранение, но и часть личности владельца. От открытых стеллажей в скандинавском стиле до тяжёлых дубовых библиотек со стеклянными дверцами — каждый формат служит разным задачам. Современные модели часто комбинируют закрытые секции для документов и открытые полки для книг и предметов декора. Глубина 25–35 см достаточна для большинства книг.",
     badge: "Стеллаж",
@@ -1394,6 +1475,7 @@ const crocodiles = [
     name: "Комод",
     latin: "Спальня и порядок",
     tags: ["storage", "bedroom"],
+    model: "dresser",
     short: "Низкий шкаф с ящиками для одежды и мелочей — классика спальни.",
     description: "Комод — практичное решение для спальни и прихожей. В отличие от шкафа, он работает горизонтально: широкая столешница становится местом для лампы, фоторамок или зеркала, а 4–6 выдвижных ящиков вмещают весь сезонный гардероб. Качественные модели имеют доводчики, упоры и задние стенки из ХДФ, что продлевает срок службы фурнитуры на десятилетия.",
     badge: "Хранение",
@@ -1410,6 +1492,7 @@ const crocodiles = [
     name: "Зеркало",
     latin: "Свет и пространство",
     tags: ["decor"],
+    model: "mirror",
     short: "Удваивает свет, добавляет глубины комнате и помогает по утрам.",
     description: "Зеркало — самый недооценённый предмет интерьера. Большое напольное зеркало рядом с окном визуально удваивает помещение и количество света; зеркальная стена в узком коридоре расширяет пространство; декоративное зеркало с резной рамой становится фокусом стены. Венецианские зеркала с фасеткой и серебряной амальгамой ценятся не меньше живописи. Угол наклона должен быть учтён, чтобы видеть себя в полный рост.",
     badge: "Декор",
@@ -1426,6 +1509,7 @@ const crocodiles = [
     name: "Ковёр",
     latin: "Текстура и тепло",
     tags: ["decor"],
+    model: "carpet",
     short: "Ткёт уют под ногами и собирает интерьер в единое целое.",
     description: "Ковёр — это последний штрих, который превращает комнату в пространство. Шерстяные персидские ковры с тысячелетней историей хранят память поколений ткачей; современные модели из джута или вискозы привносят в дом природную фактуру. Ковёр гасит шаги, утепляет пол, объединяет мебельную группу и задаёт акцент. Размер должен соответствовать зоне: под обеденный стол — больше стола на 60 см с каждой стороны.",
     badge: "Декор-акцент",
@@ -1436,6 +1520,108 @@ const crocodiles = [
       "Стиль": "Персидский, берберский, модерн",
       "Размер": "От 60×90 до 300×400 см",
       "Уход": "Пылесос, химчистка раз в год"
+    }
+  },
+  {
+    name: "Барный стул",
+    latin: "Кухня и стойка",
+    tags: ["seating"],
+    model: "barStool",
+    short: "Высокий стул для кухонного острова и барной стойки.",
+    description: "Барный стул — спутник современной открытой кухни. Высота сиденья 65–75 см рассчитана под стандартные барные стойки и кухонные острова. Модели на хромированной ножке с поворотным механизмом — функциональная классика; деревянные с подножкой — уютный домашний вариант. Для долгого сидения важна спинка и мягкое сиденье.",
+    badge: "Кухня",
+    photos: ["Two Bar Stools (2897079476).jpg", "Bar Bambus.JPG", "Bar Stools (49907001456).jpg", "020 Japan Matsuya gyudon restaurant in Osaka - 松屋.jpg"],
+    info: {
+      "Высота сиденья": "65–75 см",
+      "Материал": "Дерево, металл, пластик",
+      "Поворотный": "Часто да",
+      "Спинка": "С/без",
+      "Подножка": "Желательна"
+    }
+  },
+  {
+    name: "Пуф",
+    latin: "Универсальный компаньон",
+    tags: ["seating", "decor"],
+    model: "pouf",
+    short: "Маленький мягкий помощник: и подставка для ног, и табурет, и столик.",
+    description: "Пуф — самый универсальный мягкий предмет в доме. На него можно положить ноги, сидя на диване; использовать как дополнительное место для гостей; превратить в столик, поставив поднос с чаем. Современные пуфы с откидной крышкой работают как ящик для пледов и игрушек. Лёгкий, мобильный, моментально меняет назначение комнаты.",
+    badge: "Многофункциональный",
+    photos: ["Antikes Sofa Diwan furniert Laden daybed.jpg", "Bristol.zoo.westafrican.dwarf.croc.arp.jpg", "Aerodynamic desk img 1078 (2).jpg"],
+    info: {
+      "Высота": "40–45 см",
+      "Размер": "От 35 до 60 см",
+      "Форма": "Круглый, квадратный, прямоугольный",
+      "Обивка": "Велюр, кожа, рогожка",
+      "Особенность": "Часто с местом для хранения"
+    }
+  },
+  {
+    name: "Угловой диван",
+    latin: "Гостиная-планировка",
+    tags: ["seating"],
+    model: "cornerSofa",
+    short: "Большой диван-уголок: вмещает всю семью и оптимально занимает пространство.",
+    description: "Угловой диван — оптимальное решение для просторной гостиной или студии. Г-образная форма организует пространство, отделяя зону отдыха от остальной комнаты. Большинство моделей раскладываются в просторное спальное место, а под сиденьями скрывается вместительный ящик для постельного белья. Лево- или правосторонний угол выбирается под планировку комнаты.",
+    badge: "Премиум",
+    photos: ["Sofa3800ppx.jpg", "2009-05-16 Main office lobby at Hampton Forest Apartments.jpg", "Couch Furniture.JPG"],
+    info: {
+      "Длина": "240–340 см",
+      "Угол": "Левый / правый",
+      "Раскладной": "Да, спальное место от 200×140",
+      "Хранение": "Ящик под сиденьем",
+      "Места": "От 4 до 7 человек"
+    }
+  },
+  {
+    name: "Туалетный столик",
+    latin: "Будуар и красота",
+    tags: ["bedroom", "storage"],
+    model: "vanity",
+    short: "Изящный столик с зеркалом для утренних ритуалов и хранения косметики.",
+    description: "Туалетный столик — последний акт уходящей классики и современный must-have для тех, кто ценит ритуалы. Большое зеркало, удобный пуф, ящики для косметики и украшений — всё под рукой. Современные модели часто имеют LED-подсветку зеркала и встроенные розетки для приборов. Глубина 35–45 см позволяет разместить столик даже в небольшой спальне.",
+    badge: "Спальня",
+    photos: ["Dressing table, designed by Carlo Bugatti for his own use, Paris, c. 1904 - Royal Ontario Museum - DSC09510.JPG", "Dressing table MET 51619.jpg", "Luigi Massoni designed cylinder dressing table half closed.jpg"],
+    info: {
+      "Ширина": "80–120 см",
+      "Глубина": "35–45 см",
+      "Зеркало": "Часто с подсветкой",
+      "Ящики": "От 1 до 5",
+      "В комплекте": "Пуф или табурет"
+    }
+  },
+  {
+    name: "Диван-кровать",
+    latin: "Малометражка-спасатель",
+    tags: ["seating", "bedroom"],
+    model: "sofaBed",
+    short: "Днём — диван для гостей, ночью — полноценная двуспальная кровать.",
+    description: "Диван-кровать — герой малометражных квартир и студий. Современные механизмы трансформации (еврокнижка, аккордеон, дельфин) превращают диван в кровать за секунды без снятия подушек. Качественный ортопедический матрас встроен в конструкцию, а ниша под сиденьем хранит постельное бельё. Идеальное решение для гостевой комнаты или однушки.",
+    badge: "Трансформер",
+    photos: ["Antikes Sofa Diwan 1880 furniert.jpg", "Antikes Sofa Diwan furniert Laden daybed.jpg", "Bambetel.JPG", "AUC16A (8049813206).jpg"],
+    info: {
+      "Механизм": "Еврокнижка, аккордеон, дельфин",
+      "Спальное место": "200×140 / 200×160 см",
+      "Матрас": "Ортопедический встроенный",
+      "Хранение": "Ящик под сиденьем",
+      "Раскладывается": "За 5 секунд"
+    }
+  },
+  {
+    name: "Вешалка-стойка",
+    latin: "Прихожая-функционал",
+    tags: ["storage", "decor"],
+    model: "coatRack",
+    short: "Минимум места — максимум порядка: пальто, сумки, шляпы под рукой.",
+    description: "Напольная вешалка — самый компактный способ организовать прихожую. Не требует крепления к стене, мобильна, занимает четверть квадратного метра. Современные модели сочетают крючки для верхней одежды, отделение для шляп, нижнюю полку для сумок и зонтов. Стиль варьируется от строгого металлического минимализма до резного дерева в духе ар-нуво.",
+    badge: "Прихожая",
+    photos: ["Appendiabiti.JPG", "Anticuaria Mariscal Robledo (2).JPG", "Cabide do rei (12826651824).jpg"],
+    info: {
+      "Высота": "170–195 см",
+      "Крючки": "От 4 до 12",
+      "Материал": "Дерево, металл",
+      "Устойчивость": "Тяжёлое основание",
+      "Особенность": "Часто с подставкой для зонтов"
     }
   }
 ];
@@ -1474,6 +1660,12 @@ function openModal(index) {
   document.getElementById('modalLatin').textContent = croc.latin;
   document.getElementById('modalDesc').textContent = croc.description;
 
+  if (croc.model && window.showPreview3D) {
+    window.showPreview3D(croc.model);
+  } else if (window.hidePreview3D) {
+    window.hidePreview3D();
+  }
+
   document.getElementById('modalInfo').innerHTML = Object.entries(croc.info)
     .map(([k, v]) => `<div class="info-item"><strong>${k}</strong>${v}</div>`)
     .join('');
@@ -1493,6 +1685,7 @@ function openModal(index) {
 function closeModal() {
   document.getElementById('crocModal').classList.remove('active');
   document.body.style.overflow = '';
+  if (window.hidePreview3D) window.hidePreview3D();
 }
 
 function openLightbox(src) {
@@ -1872,6 +2065,94 @@ const FURNITURE = {
     const glow = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), new THREE.MeshBasicMaterial({ color: 0xfff0c4 }));
     glow.position.y = 2.5; g.add(glow);
     return g;
+  }},
+  curtain: { name: 'Шторы', icon: '🪟', price: 7000, color: 0xb84545, build(c) {
+    const g = new THREE.Group();
+    const rod = meshCyl(0.025, 0.025, 2.4, 0x6a4a2a, 12); rod.rotation.z = Math.PI / 2; rod.position.y = 2.5; g.add(rod);
+    [-0.55, 0.55].forEach(end => { const cap = meshCyl(0.05, 0.05, 0.05, 0xd4b860, 12); cap.rotation.z = Math.PI / 2; cap.position.set(end * 2.3, 2.5, 0); g.add(cap); });
+    // Two pleated panels (left + right)
+    [-1, 1].forEach(side => {
+      const panelGroup = new THREE.Group();
+      for (let i = 0; i < 6; i++) {
+        const fold = meshBox(0.18, 2.3, 0.08, c, 0.95);
+        fold.position.set(i * 0.16 - 0.4, -1.15, (i % 2) * 0.04);
+        panelGroup.add(fold);
+      }
+      panelGroup.position.set(side * 0.55, 2.45, 0);
+      g.add(panelGroup);
+    });
+    return g;
+  }},
+  cornerSofa: { name: 'Угловой диван', icon: '🛋️', price: 68000, color: 0x4a6a7a, build(c) {
+    const g = new THREE.Group();
+    const main = meshBox(2.8, 0.5, 1, c); main.position.set(0, 0.4, 0); g.add(main);
+    const mainSeat = meshBox(2.7, 0.3, 0.95, c); mainSeat.position.set(0, 0.78, 0); g.add(mainSeat);
+    const mainBack = meshBox(2.8, 0.9, 0.25, c); mainBack.position.set(0, 1.1, -0.4); g.add(mainBack);
+    const ext = meshBox(1, 0.5, 1.6, c); ext.position.set(1.9, 0.4, 0.8); g.add(ext);
+    const extSeat = meshBox(0.95, 0.3, 1.55, c); extSeat.position.set(1.9, 0.78, 0.8); g.add(extSeat);
+    const extBack = meshBox(0.25, 0.9, 1.6, c); extBack.position.set(2.27, 1.1, 0.8); g.add(extBack);
+    const armL = meshBox(0.25, 0.7, 1, c); armL.position.set(-1.4, 1, 0); g.add(armL);
+    return g;
+  }},
+  sofaBed: { name: 'Диван-кровать', icon: '🛌', price: 52000, color: 0x5a4a6a, build(c) {
+    const g = new THREE.Group();
+    const base = meshBox(2.2, 0.4, 1, c); base.position.y = 0.35; g.add(base);
+    const seat = meshBox(2.1, 0.25, 0.95, c); seat.position.y = 0.7; g.add(seat);
+    const back = meshBox(2.2, 0.7, 0.2, c); back.position.set(0, 0.95, -0.4); g.add(back);
+    [-1.05, 1.05].forEach(x => { const arm = meshBox(0.2, 0.55, 1, c); arm.position.set(x, 0.85, 0); g.add(arm); });
+    const pillow1 = meshBox(0.55, 0.15, 0.3, 0xeeddcc); pillow1.position.set(-0.6, 0.86, 0.2); g.add(pillow1);
+    const pillow2 = pillow1.clone(); pillow2.position.x = 0.6; g.add(pillow2);
+    return g;
+  }},
+  vanity: { name: 'Туалетный столик', icon: '💄', price: 19000, color: 0xeae0d0, build(c) {
+    const g = new THREE.Group();
+    const top = meshBox(1.1, 0.05, 0.45, c); top.position.y = 0.78; g.add(top);
+    [-0.5, 0.5].forEach(x => [-0.2, 0.2].forEach(z => { const leg = meshBox(0.06, 0.76, 0.06, c); leg.position.set(x, 0.38, z); g.add(leg); }));
+    const drawer = meshBox(0.6, 0.12, 0.4, 0xb89a7a); drawer.position.set(0, 0.7, 0); g.add(drawer);
+    // Mirror frame on top
+    const frame = meshBox(0.8, 1, 0.04, c); frame.position.set(0, 1.32, -0.2); g.add(frame);
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.9), new THREE.MeshStandardMaterial({ color: 0xc8d8e0, metalness: 0.9, roughness: 0.1 }));
+    glass.position.set(0, 1.32, -0.18); g.add(glass);
+    // Pouf
+    const pouf = meshCyl(0.22, 0.22, 0.4, 0xe8c4a8); pouf.position.set(0, 0.2, 0.55); g.add(pouf);
+    return g;
+  }},
+  pouf: { name: 'Пуф', icon: '⚪', price: 5500, color: 0xc8a878, build(c) {
+    const g = new THREE.Group();
+    const top = meshCyl(0.32, 0.3, 0.4, c); top.position.y = 0.2; g.add(top);
+    const cushion = new THREE.Mesh(new THREE.SphereGeometry(0.32, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2.5), mat(c, 0.85));
+    cushion.position.y = 0.4; cushion.castShadow = true; g.add(cushion);
+    return g;
+  }},
+  barStool: { name: 'Барный стул', icon: '🍸', price: 8500, color: 0x5a4030, build(c) {
+    const g = new THREE.Group();
+    const seat = meshCyl(0.22, 0.22, 0.06, c, 24); seat.position.y = 0.8; g.add(seat);
+    const back = meshBox(0.42, 0.5, 0.05, c); back.position.set(0, 1.1, -0.18); g.add(back);
+    const pole = meshCyl(0.04, 0.04, 0.78, 0xc4c4c4, 12); pole.position.y = 0.4; g.add(pole);
+    const baseDisc = meshCyl(0.25, 0.25, 0.04, 0xc4c4c4, 24); baseDisc.position.y = 0.02; g.add(baseDisc);
+    const footring = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.015, 8, 24), mat(0xc4c4c4, 0.4));
+    footring.rotation.x = Math.PI / 2; footring.position.y = 0.3; g.add(footring);
+    return g;
+  }},
+  coatRack: { name: 'Вешалка', icon: '🧥', price: 5000, color: 0x3a2a20, build(c) {
+    const g = new THREE.Group();
+    const baseDisc = meshCyl(0.3, 0.3, 0.04, c, 16); baseDisc.position.y = 0.02; g.add(baseDisc);
+    const pole = meshCyl(0.04, 0.04, 1.85, c, 12); pole.position.y = 0.95; g.add(pole);
+    const top = new THREE.Mesh(new THREE.SphereGeometry(0.05, 12, 8), mat(c, 0.5)); top.position.y = 1.9; g.add(top);
+    // Hooks
+    for (let i = 0; i < 4; i++) {
+      const angle = (i / 4) * Math.PI * 2;
+      const hookGroup = new THREE.Group();
+      const arm = meshBox(0.18, 0.025, 0.025, c); arm.position.set(0.1, 0, 0); hookGroup.add(arm);
+      const tip = meshBox(0.025, 0.06, 0.025, c); tip.position.set(0.18, 0.03, 0); hookGroup.add(tip);
+      hookGroup.position.y = 1.65;
+      hookGroup.rotation.y = angle;
+      g.add(hookGroup);
+    }
+    // Coat
+    const coat = meshBox(0.5, 0.7, 0.15, 0x6a4a2a, 0.85);
+    coat.position.set(0.25, 1.3, 0); g.add(coat);
+    return g;
   }}
 };
 
@@ -2083,7 +2364,119 @@ function tick() {
 }
 tick();
 
-// Add a couple of starter items so the room isn't empty
+// ============ Modal 3D Preview ============
+const previewCanvas = document.getElementById('previewCanvas');
+const previewWrap = document.getElementById('preview3D');
+let previewRenderer, previewScene, previewCamera, previewObject, autoRotate = true;
+let pIsDragging = false, pPrevX = 0, pPrevY = 0;
+
+function initPreview() {
+  if (previewRenderer) return;
+  previewRenderer = new THREE.WebGLRenderer({ canvas: previewCanvas, antialias: true, alpha: true });
+  previewRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  previewRenderer.shadowMap.enabled = true;
+  previewRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  previewScene = new THREE.Scene();
+  previewScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+  const sun2 = new THREE.DirectionalLight(0xffe8c4, 0.8);
+  sun2.position.set(4, 6, 4); sun2.castShadow = true;
+  sun2.shadow.mapSize.set(512, 512);
+  previewScene.add(sun2);
+  const fill2 = new THREE.DirectionalLight(0x8aa8c4, 0.4);
+  fill2.position.set(-3, 3, -3);
+  previewScene.add(fill2);
+
+  // Disc floor
+  const disc = new THREE.Mesh(
+    new THREE.CircleGeometry(2, 48),
+    new THREE.MeshStandardMaterial({ color: 0x2a3a30, roughness: 0.9 })
+  );
+  disc.rotation.x = -Math.PI / 2;
+  disc.receiveShadow = true;
+  previewScene.add(disc);
+
+  previewCamera = new THREE.PerspectiveCamera(40, 1, 0.1, 50);
+  previewCamera.position.set(3, 2.2, 3.5);
+  previewCamera.lookAt(0, 0.8, 0);
+
+  // Drag rotation
+  const stop = () => { autoRotate = false; pIsDragging = true; };
+  const move = (e) => {
+    if (!pIsDragging || !previewObject) return;
+    const t = e.touches ? e.touches[0] : e;
+    const dx = t.clientX - pPrevX;
+    previewObject.rotation.y += dx * 0.01;
+    pPrevX = t.clientX;
+    pPrevY = t.clientY;
+    e.preventDefault?.();
+  };
+  const startDrag = (e) => {
+    const t = e.touches ? e.touches[0] : e;
+    pPrevX = t.clientX; pPrevY = t.clientY;
+    stop();
+  };
+  const end = () => { pIsDragging = false; };
+  previewCanvas.addEventListener('pointerdown', startDrag);
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', end);
+
+  function previewTick() {
+    requestAnimationFrame(previewTick);
+    if (!previewWrap.offsetParent) return; // hidden, skip
+    if (autoRotate && previewObject) previewObject.rotation.y += 0.005;
+    const w = previewCanvas.clientWidth;
+    const h = previewCanvas.clientHeight;
+    if (previewCanvas.width !== w || previewCanvas.height !== h) {
+      previewRenderer.setSize(w, h, false);
+      previewCamera.aspect = w / h;
+      previewCamera.updateProjectionMatrix();
+    }
+    previewRenderer.render(previewScene, previewCamera);
+  }
+  previewTick();
+}
+
+window.showPreview3D = function(modelKey) {
+  if (!FURNITURE[modelKey]) {
+    previewWrap.style.display = 'none';
+    return;
+  }
+  initPreview();
+  previewWrap.style.display = '';
+  if (previewObject) {
+    previewScene.remove(previewObject);
+    previewObject.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+  }
+  const def = FURNITURE[modelKey];
+  previewObject = def.build(def.color);
+  // Auto-fit camera
+  const box = new THREE.Box3().setFromObject(previewObject);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  previewObject.position.x -= center.x;
+  previewObject.position.z -= center.z;
+  previewScene.add(previewObject);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  const dist = maxDim * 2.2;
+  previewCamera.position.set(dist, dist * 0.7, dist);
+  previewCamera.lookAt(0, size.y / 2, 0);
+  autoRotate = true;
+  previewObject.rotation.y = 0;
+  // Wire add button
+  document.getElementById('previewAddBtn').onclick = () => {
+    addItem(modelKey);
+    closeModal();
+    document.getElementById('builder-section').scrollIntoView({ behavior: 'smooth' });
+  };
+};
+
+window.hidePreview3D = function() {
+  previewWrap.style.display = 'none';
+  autoRotate = true;
+};
+
+// ============ Starter items ============
 addItem('sofa');
 placed[0].group.position.set(-2, 0, -2);
 selectionRing.position.set(-2, 0.02, -2);
