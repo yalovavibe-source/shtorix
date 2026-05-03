@@ -184,6 +184,39 @@
     border-color: #c4924a;
     box-shadow: 0 0 18px rgba(196,146,74,0.3);
   }
+  .raven-toggle, .forest-toggle, .fire-toggle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(31,77,46,0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(212,184,96,0.4);
+    color: #888;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .raven-toggle:hover, .forest-toggle:hover, .fire-toggle:hover {
+    transform: scale(1.1); border-color: var(--gold);
+  }
+  .raven-toggle.active {
+    color: #777;
+    border-color: #999;
+    box-shadow: 0 0 18px rgba(180,180,180,0.3);
+  }
+  .forest-toggle.active {
+    color: #7aa050;
+    border-color: #7aa050;
+    box-shadow: 0 0 18px rgba(122,160,80,0.4);
+  }
+  .fire-toggle.active {
+    color: #e87a30;
+    border-color: #e87a30;
+    box-shadow: 0 0 18px rgba(232,122,48,0.4);
+  }
 
   /* ===== ANIMATED BUTTONS ===== */
   .btn {
@@ -2330,6 +2363,18 @@
 <div class="sound-row" style="bottom: 274px">
   <button class="wood-toggle active" id="woodToggle" title="Скрип дерева при перетаскивании" aria-label="Дерево">🪵</button>
   <div class="vol-pop"><input type="range" id="woodVol" min="0" max="100" value="80" title="Громкость скрипа"></div>
+</div>
+<div class="sound-row" style="bottom: 332px">
+  <button class="raven-toggle" id="ravenToggle" title="Вороны" aria-label="Вороны">🐦‍⬛</button>
+  <div class="vol-pop"><input type="range" id="ravenVol" min="0" max="100" value="50" title="Громкость ворон"></div>
+</div>
+<div class="sound-row" style="bottom: 390px">
+  <button class="forest-toggle" id="forestToggle" title="Лес" aria-label="Лес">🌲</button>
+  <div class="vol-pop"><input type="range" id="forestVol" min="0" max="100" value="60" title="Громкость леса"></div>
+</div>
+<div class="sound-row" style="bottom: 448px">
+  <button class="fire-toggle" id="fireToggle" title="Костёр" aria-label="Костёр">🔥</button>
+  <div class="vol-pop"><input type="range" id="fireVol" min="0" max="100" value="60" title="Громкость костра"></div>
 </div>
 
 <footer>
@@ -4950,10 +4995,13 @@ let lastWoodTime = 0;
 
 // Per-channel volumes (0..1)
 const vols = {
-  birds: clamp01(parseFloat(localStorage.getItem('shtorix_vol_master')) / 100, 1.0),
-  rain:  clamp01(parseFloat(localStorage.getItem('shtorix_vol_rain'))   / 100, 0.6),
-  sea:   clamp01(parseFloat(localStorage.getItem('shtorix_vol_sea'))    / 100, 0.6),
-  wood:  clamp01(parseFloat(localStorage.getItem('shtorix_vol_wood'))   / 100, 0.8)
+  birds:  clamp01(parseFloat(localStorage.getItem('shtorix_vol_master'))  / 100, 1.0),
+  rain:   clamp01(parseFloat(localStorage.getItem('shtorix_vol_rain'))    / 100, 0.6),
+  sea:    clamp01(parseFloat(localStorage.getItem('shtorix_vol_sea'))     / 100, 0.6),
+  wood:   clamp01(parseFloat(localStorage.getItem('shtorix_vol_wood'))    / 100, 0.8),
+  raven:  clamp01(parseFloat(localStorage.getItem('shtorix_vol_raven'))   / 100, 0.5),
+  forest: clamp01(parseFloat(localStorage.getItem('shtorix_vol_forest'))  / 100, 0.6),
+  fire:   clamp01(parseFloat(localStorage.getItem('shtorix_vol_fire'))    / 100, 0.6)
 };
 let woodOn = localStorage.getItem('shtorix_wood_off') !== '1';
 function clamp01(v, def) {
@@ -4962,6 +5010,8 @@ function clamp01(v, def) {
 }
 const RAIN_BASE = 0.22;
 const SEA_BASE = 0.18;
+const FOREST_BASE = 0.18;
+const FIRE_BASE = 0.22;
 
 function getCtx() {
   if (!audioCtx) {
@@ -5056,10 +5106,16 @@ audioBtn.addEventListener('click', () => {
     scheduleBirds();
     if (rainOn) startRain();
     if (seaOn) startSea();
+    if (forestOn) startForest();
+    if (fireOn) startFire();
+    if (ravenOn) scheduleRavens();
   } else {
     if (birdTimer) { clearTimeout(birdTimer); birdTimer = null; }
+    if (ravenTimer) { clearTimeout(ravenTimer); ravenTimer = null; }
     stopRain();
     stopSea();
+    stopForest();
+    stopFire();
   }
 });
 
@@ -5312,17 +5368,312 @@ woodBtn.addEventListener('click', () => {
   refreshWoodBtn();
 });
 
+// ============ RAVENS ============
+let ravenOn = localStorage.getItem('shtorix_raven_on') === '1';
+let ravenTimer = null;
+
+function playRavenCaw() {
+  if (!ravenOn || !audioOn || vols.raven <= 0) return;
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+  // Sawtooth + noise mix for harsh "kraaa"
+  const baseFreq = 200 + Math.random() * 120;
+  const dur = 0.35 + Math.random() * 0.2;
+  // Sawtooth oscillator
+  const osc = ctx.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(baseFreq * 1.2, t);
+  osc.frequency.exponentialRampToValueAtTime(baseFreq * 0.6, t + dur);
+  // Noise component for raspiness
+  const nLen = Math.floor(ctx.sampleRate * dur);
+  const nBuf = ctx.createBuffer(1, nLen, ctx.sampleRate);
+  const nData = nBuf.getChannelData(0);
+  for (let i = 0; i < nLen; i++) nData[i] = (Math.random() * 2 - 1) * 0.6;
+  const nSrc = ctx.createBufferSource();
+  nSrc.buffer = nBuf;
+  // Bandpass to shape into "voice" range
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass'; bp.frequency.value = baseFreq * 1.5; bp.Q.value = 3;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 1800;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.15 * vols.raven, t + 0.04);
+  gain.gain.linearRampToValueAtTime(0.10 * vols.raven, t + dur * 0.6);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  osc.connect(bp); nSrc.connect(bp);
+  bp.connect(lp); lp.connect(gain); gain.connect(ctx.destination);
+  osc.start(t); osc.stop(t + dur);
+  nSrc.start(t); nSrc.stop(t + dur);
+}
+
+function scheduleRavens() {
+  if (ravenTimer) clearTimeout(ravenTimer);
+  if (!ravenOn || !audioOn) return;
+  const next = 5000 + Math.random() * 12000;
+  ravenTimer = setTimeout(() => {
+    playRavenCaw();
+    if (Math.random() > 0.5) setTimeout(playRavenCaw, 350 + Math.random() * 400);
+    if (Math.random() > 0.7) setTimeout(playRavenCaw, 800 + Math.random() * 500);
+    scheduleRavens();
+  }, next);
+}
+
+const ravenBtn = document.getElementById('ravenToggle');
+function refreshRavenBtn() { if (ravenOn) ravenBtn.classList.add('active'); else ravenBtn.classList.remove('active'); }
+refreshRavenBtn();
+ravenBtn.addEventListener('click', () => {
+  ravenOn = !ravenOn;
+  localStorage.setItem('shtorix_raven_on', ravenOn ? '1' : '0');
+  refreshRavenBtn();
+  if (ravenOn) {
+    if (!audioOn) {
+      audioOn = true;
+      localStorage.setItem('shtorix_audio_off', '0');
+      refreshAudioBtn();
+    }
+    getCtx();
+    playRavenCaw();
+    scheduleRavens();
+  } else if (ravenTimer) {
+    clearTimeout(ravenTimer); ravenTimer = null;
+  }
+});
+
+// ============ FOREST ============
+let forestOn = localStorage.getItem('shtorix_forest_on') === '1';
+let forestSrc = null, forestGain = null, forestRustleTimer = null;
+
+function startForest() {
+  if (forestSrc || !audioOn) return;
+  const ctx = getCtx();
+  const dur = 5;
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const r = Math.random() * 2 - 1;
+      // Pink-brown noise for "wind through leaves"
+      last = (last + 0.03 * r) / 1.03;
+      data[i] = last * 4 + r * 0.2;
+    }
+  }
+  forestSrc = ctx.createBufferSource();
+  forestSrc.buffer = buffer;
+  forestSrc.loop = true;
+  // Wind: highpass + sweep
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 200;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 3000;
+  const peak = ctx.createBiquadFilter();
+  peak.type = 'peaking'; peak.frequency.value = 800; peak.gain.value = 2.5; peak.Q.value = 0.7;
+  forestGain = ctx.createGain();
+  forestGain.gain.setValueAtTime(0, ctx.currentTime);
+  forestGain.gain.linearRampToValueAtTime(FOREST_BASE * vols.forest, ctx.currentTime + 1.5);
+  // Slow LFO modulating filter freq for wind movement
+  const lfo = ctx.createOscillator();
+  lfo.type = 'sine';
+  lfo.frequency.value = 0.07;
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = 600;
+  lfo.connect(lfoGain);
+  lfoGain.connect(lp.frequency);
+  lfo.start();
+  forestSrc.connect(hp); hp.connect(peak); peak.connect(lp); lp.connect(forestGain);
+  forestGain.connect(ctx.destination);
+  forestSrc.start();
+  forestLfo = lfo;
+  scheduleRustle();
+}
+let forestLfo = null;
+
+function playRustle() {
+  if (!forestOn || !audioOn) return;
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+  const dur = 0.4 + Math.random() * 0.5;
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 2500;
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 7000;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(0.04 * vols.forest, t + 0.1);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(hp); hp.connect(lp); lp.connect(g); g.connect(ctx.destination);
+  src.start(t); src.stop(t + dur);
+}
+
+function scheduleRustle() {
+  if (forestRustleTimer) clearTimeout(forestRustleTimer);
+  if (!forestOn || !audioOn) return;
+  const next = 3000 + Math.random() * 8000;
+  forestRustleTimer = setTimeout(() => {
+    playRustle();
+    if (Math.random() > 0.5) setTimeout(playRustle, 300 + Math.random() * 600);
+    scheduleRustle();
+  }, next);
+}
+
+function stopForest() {
+  if (forestRustleTimer) { clearTimeout(forestRustleTimer); forestRustleTimer = null; }
+  if (!forestSrc) return;
+  const ctx = getCtx();
+  try { forestGain.gain.cancelScheduledValues(ctx.currentTime); } catch {}
+  forestGain.gain.setValueAtTime(forestGain.gain.value, ctx.currentTime);
+  forestGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.9);
+  const src = forestSrc, lfo = forestLfo;
+  setTimeout(() => {
+    try { src.stop(); } catch {}
+    try { if (lfo) lfo.stop(); } catch {}
+  }, 1000);
+  forestSrc = null; forestGain = null; forestLfo = null;
+}
+
+const forestBtn = document.getElementById('forestToggle');
+function refreshForestBtn() { if (forestOn) forestBtn.classList.add('active'); else forestBtn.classList.remove('active'); }
+refreshForestBtn();
+forestBtn.addEventListener('click', () => {
+  forestOn = !forestOn;
+  localStorage.setItem('shtorix_forest_on', forestOn ? '1' : '0');
+  refreshForestBtn();
+  if (forestOn) {
+    if (!audioOn) {
+      audioOn = true;
+      localStorage.setItem('shtorix_audio_off', '0');
+      refreshAudioBtn();
+    }
+    getCtx();
+    startForest();
+  } else {
+    stopForest();
+  }
+});
+
+// ============ FIRE / CAMPFIRE ============
+let fireOn = localStorage.getItem('shtorix_fire_on') === '1';
+let fireSrc = null, fireGain = null, fireCrackleTimer = null;
+
+function startFire() {
+  if (fireSrc || !audioOn) return;
+  const ctx = getCtx();
+  const dur = 5;
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(2, len, ctx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = buffer.getChannelData(ch);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const r = Math.random() * 2 - 1;
+      // Brown noise for low rumble of flames
+      last = (last + 0.012 * r) / 1.012;
+      data[i] = last * 8;
+    }
+  }
+  fireSrc = ctx.createBufferSource();
+  fireSrc.buffer = buffer;
+  fireSrc.loop = true;
+  // Filter for fire rumble
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass'; lp.frequency.value = 600;
+  const peak = ctx.createBiquadFilter();
+  peak.type = 'peaking'; peak.frequency.value = 200; peak.gain.value = 5; peak.Q.value = 0.8;
+  fireGain = ctx.createGain();
+  fireGain.gain.setValueAtTime(0, ctx.currentTime);
+  fireGain.gain.linearRampToValueAtTime(FIRE_BASE * vols.fire, ctx.currentTime + 1.2);
+  fireSrc.connect(peak); peak.connect(lp); lp.connect(fireGain);
+  fireGain.connect(ctx.destination);
+  fireSrc.start();
+  scheduleCrackle();
+}
+
+function playCrackle() {
+  if (!fireOn || !audioOn) return;
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+  // Sharp pop — short noise burst
+  const dur = 0.05 + Math.random() * 0.08;
+  const len = Math.floor(ctx.sampleRate * dur);
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.3));
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass'; hp.frequency.value = 800 + Math.random() * 1500;
+  const g = ctx.createGain();
+  const peakLevel = (0.04 + Math.random() * 0.08) * vols.fire;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(peakLevel, t + 0.003);
+  g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(hp); hp.connect(g); g.connect(ctx.destination);
+  src.start(t); src.stop(t + dur);
+}
+
+function scheduleCrackle() {
+  if (fireCrackleTimer) clearTimeout(fireCrackleTimer);
+  if (!fireOn || !audioOn) return;
+  const next = 100 + Math.random() * 500;
+  fireCrackleTimer = setTimeout(() => {
+    playCrackle();
+    if (Math.random() > 0.4) setTimeout(playCrackle, 30 + Math.random() * 120);
+    if (Math.random() > 0.7) setTimeout(playCrackle, 120 + Math.random() * 200);
+    scheduleCrackle();
+  }, next);
+}
+
+function stopFire() {
+  if (fireCrackleTimer) { clearTimeout(fireCrackleTimer); fireCrackleTimer = null; }
+  if (!fireSrc) return;
+  const ctx = getCtx();
+  try { fireGain.gain.cancelScheduledValues(ctx.currentTime); } catch {}
+  fireGain.gain.setValueAtTime(fireGain.gain.value, ctx.currentTime);
+  fireGain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
+  const src = fireSrc;
+  setTimeout(() => { try { src.stop(); } catch {} }, 900);
+  fireSrc = null; fireGain = null;
+}
+
+const fireBtn = document.getElementById('fireToggle');
+function refreshFireBtn() { if (fireOn) fireBtn.classList.add('active'); else fireBtn.classList.remove('active'); }
+refreshFireBtn();
+fireBtn.addEventListener('click', () => {
+  fireOn = !fireOn;
+  localStorage.setItem('shtorix_fire_on', fireOn ? '1' : '0');
+  refreshFireBtn();
+  if (fireOn) {
+    if (!audioOn) {
+      audioOn = true;
+      localStorage.setItem('shtorix_audio_off', '0');
+      refreshAudioBtn();
+    }
+    getCtx();
+    startFire();
+  } else {
+    stopFire();
+  }
+});
+
 // ============ Volume sliders ============
 function setupVolSlider(id, key, applyLive) {
   const el = document.getElementById(id);
   el.value = Math.round((vols[key] || 0) * 100);
+  const storeKey = 'shtorix_vol_' + (key === 'birds' ? 'master' : key);
   el.addEventListener('input', (e) => {
     const v = clamp01(parseInt(e.target.value, 10) / 100, 0);
     vols[key] = v;
-    localStorage.setItem('shtorix_vol_' + (key === 'birds' ? 'master' : key), e.target.value);
+    localStorage.setItem(storeKey, e.target.value);
     if (applyLive) applyLive(v);
   });
-  // Don't trigger button click when interacting with slider
   el.addEventListener('click', e => e.stopPropagation());
   el.addEventListener('pointerdown', e => e.stopPropagation());
 }
@@ -5343,6 +5694,21 @@ setupVolSlider('seaVol', 'sea', (v) => {
   }
 });
 setupVolSlider('woodVol', 'wood');
+setupVolSlider('ravenVol', 'raven');
+setupVolSlider('forestVol', 'forest', (v) => {
+  if (forestGain) {
+    const ctx = getCtx();
+    forestGain.gain.cancelScheduledValues(ctx.currentTime);
+    forestGain.gain.linearRampToValueAtTime(FOREST_BASE * v, ctx.currentTime + 0.15);
+  }
+});
+setupVolSlider('fireVol', 'fire', (v) => {
+  if (fireGain) {
+    const ctx = getCtx();
+    fireGain.gain.cancelScheduledValues(ctx.currentTime);
+    fireGain.gain.linearRampToValueAtTime(FIRE_BASE * v, ctx.currentTime + 0.15);
+  }
+});
 
 // Auto-start audio on first interaction (browsers require user gesture)
 let audioStarted = false;
@@ -5354,6 +5720,9 @@ function startAudioOnce() {
     setTimeout(() => { playBirdChirp(); scheduleBirds(); }, 800);
     if (rainOn) setTimeout(startRain, 600);
     if (seaOn) setTimeout(startSea, 700);
+    if (forestOn) setTimeout(startForest, 750);
+    if (fireOn) setTimeout(startFire, 800);
+    if (ravenOn) setTimeout(scheduleRavens, 900);
   }
 }
 window.addEventListener('pointerdown', startAudioOnce, { once: true });
