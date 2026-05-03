@@ -1970,7 +1970,7 @@
       <h2>Оплачено в MTC!</h2>
       <p style="margin-top:10px;opacity:0.85">Списано: <strong id="mtcSpent" style="color:var(--gold)"></strong></p>
       <p style="margin-top:5px;opacity:0.85">Остаток: <strong id="mtcLeft" style="color:var(--gold)"></strong></p>
-      <p style="margin-top:15px;opacity:0.7;font-size:0.9rem">Заказ № <strong id="mtcOrderNum" style="color:var(--gold)"></strong> оформлен. Менеджер свяжется в течение часа для уточнения адреса доставки.</p>
+      <p style="margin-top:15px;opacity:0.7;font-size:0.9rem">Заказ № <strong id="mtcOrderNum" style="color:var(--gold)"></strong>. Интерьер автоматически сохранён в вашу ленту — теперь можно опубликовать его кнопкой 🌍.</p>
       <button class="order-btn" style="margin-top:25px" onclick="closeMtcSuccess()">Готово</button>
     </div>
   </div>
@@ -2688,13 +2688,17 @@ document.getElementById('mtcSuccessModal').addEventListener('click', (e) => {
   if (e.target.id === 'mtcSuccessModal') closeMtcSuccess();
 });
 
-window.payWithMtc = function(items, totalRub) {
-  const cost = totalRub; // 1 MTC = 1 MTC
+window.payWithMtc = function(items, totalRub, roomState, thumbnail) {
+  const cost = totalRub;
   if (MTC.balance < cost) {
     alert(`Недостаточно MTC. Нужно: ${cost.toLocaleString('ru-RU')}, у вас: ${MTC.balance.toLocaleString('ru-RU')}.\n\nЗайди завтра — получишь ещё 100 000 MTC!`);
     return false;
   }
   MTC.spend(cost);
+  // Купленный интерьер автоматически сохраняется в ленту с отметкой "куплено" — только такие можно публиковать
+  if (roomState && thumbnail && window.saveToFeed) {
+    window.saveToFeed(roomState, thumbnail, true);
+  }
   document.getElementById('mtcSpent').textContent = cost.toLocaleString('ru-RU') + ' MTC';
   document.getElementById('mtcLeft').textContent = MTC.balance.toLocaleString('ru-RU') + ' MTC';
   document.getElementById('mtcOrderNum').textContent = '#' + Math.floor(100000 + Math.random() * 900000);
@@ -2749,13 +2753,13 @@ function showFeedToast(msg, icon = '📁') {
   setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 500); }, 2800);
 }
 
-window.saveToFeed = function(state, thumbnail) {
+window.saveToFeed = function(state, thumbnail, purchased = false) {
   const rooms = getRooms();
   const id = 'room_' + Date.now();
   const date = new Date().toISOString();
   const counter = rooms.length + 1;
   const name = `Интерьер №${counter}`;
-  const room = { id, name, date, thumbnail, ...state };
+  const room = { id, name, date, thumbnail, purchased, ...state };
   rooms.unshift(room);
   // Cap at 30 to keep storage size reasonable
   while (rooms.length > 30) rooms.pop();
@@ -2788,14 +2792,30 @@ function renderFeed() {
   grid.innerHTML = rooms.map(room => {
     const date = new Date(room.date).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
     const price = (room.totalPrice || 0).toLocaleString('ru-RU');
-    const sharedBadge = room.sharedAt ? '<span style="color:var(--gold);font-size:0.8rem"> · 🌍 опубликовано</span>' : '';
-    const shareLabel = room.sharedAt ? '✓ Опубликовано' : '🌍 Поделиться';
-    const shareDisabled = room.sharedAt ? 'disabled style="opacity:0.6;cursor:default"' : '';
+    let statusBadge = '';
+    if (room.sharedAt) statusBadge = '<span style="color:var(--gold);font-size:0.8rem"> · 🌍 опубликовано</span>';
+    else if (room.purchased) statusBadge = '<span style="color:var(--green-bright);font-size:0.8rem"> · ✓ куплено</span>';
+    else statusBadge = '<span style="color:#999;font-size:0.8rem"> · 📝 черновик</span>';
+
+    let shareTitle, shareDisabled, shareHandler;
+    if (room.sharedAt) {
+      shareTitle = '✓ Опубликовано';
+      shareDisabled = 'disabled style="opacity:0.6;cursor:default"';
+      shareHandler = '';
+    } else if (!room.purchased) {
+      shareTitle = 'Сначала купите интерьер за MTC';
+      shareDisabled = 'style="opacity:0.4;cursor:not-allowed"';
+      shareHandler = `onclick="alert('Чтобы выложить интерьер в общую ленту, сначала купите его за MTC.\\n\\nЗагрузите комнату в конструктор и нажмите 🪙 Купить за MTC.')"`;
+    } else {
+      shareTitle = '🌍 Поделиться';
+      shareDisabled = '';
+      shareHandler = `onclick="shareToPublic('${room.id}')"`;
+    }
     return `
       <div class="feed-card" data-id="${room.id}">
         <div class="feed-thumb" style="background-image:url('${room.thumbnail}')" onclick="openLightbox('${room.thumbnail.replace(/'/g, "\\'")}')"></div>
         <div class="feed-body">
-          <h4>${room.name}${sharedBadge}</h4>
+          <h4>${room.name}${statusBadge}</h4>
           <div class="feed-meta">
             <span>📅 ${date}</span>
             <span class="feed-price">🪙 ${price} MTC</span>
@@ -2803,7 +2823,7 @@ function renderFeed() {
           <div class="feed-meta"><span>📦 ${room.itemCount || 0} предметов</span></div>
           <div class="feed-actions">
             <button class="feed-btn load" onclick="loadFromFeed('${room.id}')">↻ Загрузить</button>
-            <button class="feed-btn icon" onclick="shareToPublic('${room.id}')" title="${shareLabel}" ${shareDisabled}>🌍</button>
+            <button class="feed-btn icon" ${shareHandler} title="${shareTitle}" ${shareDisabled}>🌍</button>
             <button class="feed-btn icon download" onclick="downloadFromFeed('${room.id}')" title="Скачать">⬇</button>
             <button class="feed-btn icon delete" onclick="deleteFromFeed('${room.id}')" title="Удалить">✕</button>
           </div>
@@ -4409,7 +4429,29 @@ document.getElementById('saveBtn').addEventListener('click', () => {
 document.getElementById('payMtcBtn').addEventListener('click', () => {
   if (placed.length === 0) return;
   const total = placed.reduce((s, p) => s + p.price, 0) + 2500;
-  if (window.payWithMtc) window.payWithMtc(placed.map(p => ({ name: p.name, price: p.price })), total);
+  // Capture screenshot + state BEFORE clearing the cart
+  const ringWasVisible = selectionRing.visible;
+  selectionRing.visible = false;
+  const W = wrap.clientWidth, H = wrap.clientHeight;
+  renderer.setSize(800, 600, false);
+  camera.aspect = 800 / 600; camera.updateProjectionMatrix();
+  renderer.render(scene, camera);
+  const thumb = renderer.domElement.toDataURL('image/jpeg', 0.78);
+  renderer.setSize(W, H, false);
+  camera.aspect = W / H; camera.updateProjectionMatrix();
+  selectionRing.visible = ringWasVisible;
+  const state = serializeRoom();
+
+  if (window.payWithMtc) {
+    const ok = window.payWithMtc(placed.map(p => ({ name: p.name, price: p.price })), total, state, thumb);
+    if (ok) {
+      // Flash effect
+      const flash = document.createElement('div');
+      flash.className = 'save-flash active';
+      wrap.appendChild(flash);
+      setTimeout(() => flash.remove(), 500);
+    }
+  }
 });
 
 window.getCartItems = () => placed.map(p => ({ name: p.name, icon: p.icon, price: p.price }));
