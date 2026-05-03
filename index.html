@@ -524,11 +524,12 @@
     border-left-width: 6px;
   }
   .facts-list li::before {
-    content: '🐊';
+    content: '✦';
     position: absolute;
-    left: 18px;
+    left: 22px;
     top: 18px;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    color: var(--gold);
   }
 
   /* ===== MODAL ===== */
@@ -1001,6 +1002,22 @@
     transition: all 0.3s;
   }
   .clear-btn:hover { background: rgba(255,80,80,0.2); border-color: #ff5050; color: #ff8080; }
+  .clear-btn.save-btn { color: var(--gold); border-color: rgba(212,184,96,0.4); }
+  .clear-btn.save-btn:hover { background: rgba(212,184,96,0.18); border-color: var(--gold); color: var(--gold); }
+  .save-flash {
+    position: absolute;
+    inset: 0;
+    background: white;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 10;
+  }
+  .save-flash.active { animation: flashAnim 0.4s; }
+  @keyframes flashAnim {
+    0% { opacity: 0; }
+    20% { opacity: 0.8; }
+    100% { opacity: 0; }
+  }
 
   @media (max-width: 1000px) {
     .builder { grid-template-columns: 1fr; }
@@ -1339,6 +1356,7 @@
         <div class="cart-total-row big"><span>Итого:</span><span id="cartSum">0 ₽</span></div>
         <div class="cart-actions">
           <button class="order-btn" id="orderBtn">Оформить заказ</button>
+          <button class="clear-btn save-btn" id="saveBtn">📸 Сохранить интерьер</button>
           <button class="clear-btn" id="clearBtn">Очистить</button>
         </div>
       </div>
@@ -3008,6 +3026,39 @@ function updateCart() {
 document.getElementById('clearBtn').addEventListener('click', () => {
   if (!confirm('Очистить интерьер?')) return;
   while (placed.length) removeItem(placed[0]);
+});
+
+// Save snapshot — re-render at high resolution and trigger download
+document.getElementById('saveBtn').addEventListener('click', () => {
+  // Hide selection ring temporarily
+  const ringWasVisible = selectionRing.visible;
+  selectionRing.visible = false;
+
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
+  // Render at 2x for sharper screenshot
+  const SCALE = 2;
+  renderer.setSize(W * SCALE, H * SCALE, false);
+  camera.aspect = W / H; camera.updateProjectionMatrix();
+  renderer.render(scene, camera);
+
+  const dataUrl = renderer.domElement.toDataURL('image/png');
+
+  // Restore size
+  renderer.setSize(W, H, false);
+  selectionRing.visible = ringWasVisible;
+
+  // Flash effect
+  const flash = document.createElement('div');
+  flash.className = 'save-flash active';
+  wrap.appendChild(flash);
+  setTimeout(() => flash.remove(), 500);
+
+  // Download
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = `shtorix-interior-${Date.now()}.png`;
+  a.click();
 });
 
 document.getElementById('orderBtn').addEventListener('click', () => {
