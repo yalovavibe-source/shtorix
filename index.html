@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Мир Мебели — Каталог Стиля и Уюта</title>
+<title>Shtorix — Каталог мебели, 3D-конструктор и AI-дизайн интерьеров</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -1008,6 +1008,169 @@
     .builder-canvas { min-height: 400px; }
   }
 
+  /* ===== AI GENERATOR ===== */
+  .ai-generator {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    background: linear-gradient(145deg, rgba(31,77,46,0.3), rgba(22,41,30,0.6));
+    border: 1px solid rgba(212,184,96,0.25);
+    border-radius: 24px;
+    padding: 30px;
+  }
+  .ai-input-wrap { display: flex; flex-direction: column; gap: 15px; }
+  #aiPrompt {
+    width: 100%;
+    min-height: 130px;
+    padding: 18px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 14px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 1rem;
+    line-height: 1.5;
+    outline: none;
+    resize: vertical;
+    transition: all 0.3s;
+  }
+  #aiPrompt:focus { border-color: var(--gold); background: rgba(0,0,0,0.6); }
+  .ai-presets-label {
+    font-size: 0.8rem;
+    color: var(--gold);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: -8px;
+    margin-top: 4px;
+  }
+  .ai-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .preset-btn {
+    padding: 9px 16px;
+    background: rgba(31,77,46,0.4);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    color: var(--cream);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .preset-btn:hover {
+    background: var(--gold);
+    color: var(--bg-dark);
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .ai-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .ai-actions .btn { flex: 1; padding: 14px 20px; font-size: 0.9rem; }
+  .ai-result {
+    position: relative;
+    min-height: 420px;
+    background: linear-gradient(135deg, #1a2520, #0f1814);
+    border-radius: 16px;
+    border: 1px solid rgba(212,184,96,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .ai-result-empty, .ai-result-loading {
+    text-align: center;
+    padding: 30px;
+    opacity: 0.7;
+  }
+  .ai-result-empty .icon, .ai-result-loading .icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    display: block;
+  }
+  .ai-result img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .loader {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(212,184,96,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ai-result-actions {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(15px);
+    padding: 10px 14px;
+    border-radius: 50px;
+    border: 1px solid rgba(212,184,96,0.3);
+  }
+  .ai-result-actions button {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 30px;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .ai-result-actions .btn-action {
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+  }
+  .ai-result-actions .btn-action:hover { transform: scale(1.05); }
+  .ai-result-actions .btn-secondary {
+    background: rgba(31,77,46,0.5);
+    color: var(--cream);
+    border: 1px solid rgba(212,184,96,0.3);
+  }
+  .ai-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(212,184,96,0.2);
+    overflow: hidden;
+  }
+  .ai-progress::after {
+    content: '';
+    position: absolute;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    animation: progressMove 1.8s infinite;
+  }
+  @keyframes progressMove {
+    0% { left: -30%; }
+    100% { left: 100%; }
+  }
+  @media (max-width: 900px) {
+    .ai-generator { grid-template-columns: 1fr; }
+    .ai-result { min-height: 350px; }
+  }
+
   /* Order modal form */
   .form-grid {
     display: grid;
@@ -1071,8 +1234,8 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-content">
-    <h1>МИР МЕБЕЛИ</h1>
-    <p class="subtitle">Шторы, диваны, столы и зеркала — каждый предмет создаёт характер дома. Откройте для себя коллекцию мебели от классических силуэтов до современных решений, в которых живёт настоящий уют.</p>
+    <h1>SHTORIX</h1>
+    <p class="subtitle">Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.</p>
     <button class="btn btn-pulse" onclick="scrollToSpecies()">
       Смотреть каталог <span class="arrow">↓</span>
     </button>
@@ -1180,6 +1343,66 @@
         </div>
       </div>
     </aside>
+  </div>
+</section>
+
+<!-- AI GENERATOR -->
+<section class="section" id="ai-section">
+  <div class="section-header">
+    <span class="section-tag">AI-Дизайнер</span>
+    <h2 class="section-title">Сгенерируйте Интерьер Мечты</h2>
+    <p class="section-desc">Опишите комнату своими словами — нейросеть нарисует фотореалистичное изображение интерьера за несколько секунд. Можно использовать готовые пресеты или писать собственный запрос.</p>
+  </div>
+  <div class="ai-generator">
+    <div class="ai-input-wrap">
+      <textarea id="aiPrompt" placeholder="Например: уютная гостиная в скандинавском стиле с серым диваном, деревянным журнальным столиком, большим окном с видом на лес и зелёными растениями"></textarea>
+
+      <div class="ai-presets-label">Тип комнаты</div>
+      <div class="ai-presets" id="roomPresets">
+        <button class="preset-btn" data-room="гостиная">🛋️ Гостиная</button>
+        <button class="preset-btn" data-room="спальня">🛏️ Спальня</button>
+        <button class="preset-btn" data-room="кухня">🍽️ Кухня</button>
+        <button class="preset-btn" data-room="ванная комната">🚿 Ванная</button>
+        <button class="preset-btn" data-room="детская">🧸 Детская</button>
+        <button class="preset-btn" data-room="кабинет">📚 Кабинет</button>
+        <button class="preset-btn" data-room="прихожая">🚪 Прихожая</button>
+      </div>
+
+      <div class="ai-presets-label">Стиль</div>
+      <div class="ai-presets" id="stylePresets">
+        <button class="preset-btn" data-style="скандинавский стиль, светлый, минималистичный">🌲 Скандинавия</button>
+        <button class="preset-btn" data-style="лофт, бетон, кирпич, индустриальный">🏭 Лофт</button>
+        <button class="preset-btn" data-style="минимализм, чистые линии, светлый">⬜ Минимализм</button>
+        <button class="preset-btn" data-style="ар-деко, золото, бархат, роскошный">✨ Ар-деко</button>
+        <button class="preset-btn" data-style="классический стиль, благородные материалы">🏛️ Классика</button>
+        <button class="preset-btn" data-style="современный модерн, чистые линии">🔷 Модерн</button>
+        <button class="preset-btn" data-style="бохо, текстиль, ковры, тёплый">🌿 Бохо</button>
+        <button class="preset-btn" data-style="японский стиль, ваби-саби, дерево">🎋 Японский</button>
+      </div>
+
+      <div class="ai-actions">
+        <button class="btn" id="generateBtn">✨ Сгенерировать</button>
+        <button class="clear-btn" id="aiClearBtn">Очистить</button>
+      </div>
+    </div>
+    <div class="ai-result" id="aiResult">
+      <div class="ai-result-empty" id="aiEmpty">
+        <span class="icon">🎨</span>
+        <p>Опишите комнату и нажмите «Сгенерировать»</p>
+        <p style="font-size:0.85rem;margin-top:8px;opacity:0.6">Powered by Pollinations AI · Flux model</p>
+      </div>
+      <div class="ai-result-loading" id="aiLoading" style="display:none">
+        <div class="loader"></div>
+        <p>Создаём ваш интерьер...</p>
+        <p style="font-size:0.85rem;margin-top:8px;opacity:0.6">5–15 секунд</p>
+        <div class="ai-progress"></div>
+      </div>
+      <img id="aiImage" style="display:none" alt="Сгенерированный интерьер">
+      <div class="ai-result-actions" id="aiResultActions" style="display:none">
+        <button class="btn-secondary" id="aiRegenBtn">↻ Заново</button>
+        <button class="btn-action" id="aiDownloadBtn">⬇ Скачать</button>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1294,7 +1517,7 @@
 <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Наверх">↑</button>
 
 <footer>
-  <p>🛋️ Каталог мебели — стиль, качество и уют для вашего дома 🛋️</p>
+  <p>SHTORIX · shtorix.com · Мебель, интерьер и AI-дизайн</p>
 </footer>
 
 <script>
@@ -1774,7 +1997,108 @@ function attachRipple(selector) {
     setTimeout(() => ripple.remove(), 600);
   });
 }
-attachRipple('.btn, .filter-btn, .back-to-top, .item-btn, .tool-btn, .order-btn, .clear-btn');
+attachRipple('.btn, .filter-btn, .back-to-top, .item-btn, .tool-btn, .order-btn, .clear-btn, .preset-btn');
+
+// ===== AI GENERATOR (Pollinations) =====
+const aiPrompt = document.getElementById('aiPrompt');
+const aiImage = document.getElementById('aiImage');
+const aiEmpty = document.getElementById('aiEmpty');
+const aiLoading = document.getElementById('aiLoading');
+const aiActions = document.getElementById('aiResultActions');
+let lastSeed = null;
+let lastPrompt = '';
+
+function buildPrompt(userText) {
+  const enrich = ', interior design photography, photorealistic, 8k, professional architectural photo, natural lighting, magazine quality, high detail, beautiful composition, no people';
+  return userText.trim() + enrich;
+}
+
+function generateImage(prompt, useNewSeed = true) {
+  if (!prompt.trim()) {
+    aiPrompt.focus();
+    return;
+  }
+  lastPrompt = prompt;
+  if (useNewSeed) lastSeed = Math.floor(Math.random() * 1000000);
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(buildPrompt(prompt))}?width=1024&height=768&model=flux&nologo=true&seed=${lastSeed}`;
+
+  aiEmpty.style.display = 'none';
+  aiActions.style.display = 'none';
+  aiImage.style.display = 'none';
+  aiLoading.style.display = '';
+
+  const img = new Image();
+  img.onload = () => {
+    aiImage.src = img.src;
+    aiImage.style.display = '';
+    aiLoading.style.display = 'none';
+    aiActions.style.display = '';
+  };
+  img.onerror = () => {
+    aiLoading.style.display = 'none';
+    aiEmpty.style.display = '';
+    aiEmpty.innerHTML = '<span class="icon">😢</span><p>Не удалось сгенерировать. Попробуйте ещё раз или измените запрос.</p>';
+  };
+  img.src = url;
+}
+
+document.getElementById('generateBtn').addEventListener('click', () => {
+  generateImage(aiPrompt.value);
+});
+
+aiPrompt.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'Enter') generateImage(aiPrompt.value);
+});
+
+document.getElementById('aiClearBtn').addEventListener('click', () => {
+  aiPrompt.value = '';
+  aiPrompt.focus();
+});
+
+document.getElementById('aiRegenBtn').addEventListener('click', () => {
+  generateImage(lastPrompt, true);
+});
+
+document.getElementById('aiDownloadBtn').addEventListener('click', async () => {
+  try {
+    const r = await fetch(aiImage.src);
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `shtorix-interior-${Date.now()}.jpg`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch {
+    window.open(aiImage.src, '_blank');
+  }
+});
+
+// Preset chips
+document.querySelectorAll('#roomPresets .preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const room = btn.dataset.room;
+    const current = aiPrompt.value.trim();
+    // Replace any existing room prefix or prepend
+    const rooms = ['гостиная', 'спальня', 'кухня', 'ванная комната', 'детская', 'кабинет', 'прихожая'];
+    let cleaned = current;
+    for (const r of rooms) {
+      const re = new RegExp('\\b' + r + '\\b,?\\s*', 'i');
+      cleaned = cleaned.replace(re, '');
+    }
+    aiPrompt.value = (room + (cleaned ? ', ' + cleaned : '')).trim();
+    aiPrompt.focus();
+  });
+});
+
+document.querySelectorAll('#stylePresets .preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const style = btn.dataset.style;
+    const current = aiPrompt.value.trim();
+    aiPrompt.value = current ? current + ', ' + style : style;
+    aiPrompt.focus();
+  });
+});
 
 renderCrocodiles(crocodiles);
 
