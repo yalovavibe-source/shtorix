@@ -85,6 +85,37 @@
     z-index: 2;
   }
 
+  /* ===== AUDIO TOGGLE ===== */
+  .audio-toggle {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(31,77,46,0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(212,184,96,0.4);
+    color: var(--gold);
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 90;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .audio-toggle:hover { transform: scale(1.1); border-color: var(--gold); }
+  .audio-toggle.muted { color: #888; }
+  .audio-toggle.muted::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 8px; right: 8px;
+    height: 2px;
+    background: #ff5050;
+    transform: rotate(-45deg);
+  }
+
   /* ===== ANIMATED BUTTONS ===== */
   .btn {
     position: relative;
@@ -2215,6 +2246,7 @@
 </div>
 
 <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Наверх">↑</button>
+<button class="audio-toggle" id="audioToggle" title="Включить/выключить звуки" aria-label="Звук">🔊</button>
 
 <footer>
   <p>SHTORIX · shtorix.com · Мебель, интерьер и AI-дизайн</p>
@@ -4826,6 +4858,121 @@ function setItemColor(item, hexStr) {
   });
 }
 
+// ============ AUDIO ============
+let audioCtx = null;
+let audioOn = localStorage.getItem('shtorix_audio_off') !== '1';
+let birdTimer = null;
+let lastWoodTime = 0;
+
+function getCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playWoodSound() {
+  if (!audioOn) return;
+  const now = performance.now();
+  if (now - lastWoodTime < 90) return; // throttle
+  lastWoodTime = now;
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+  const dur = 0.16;
+  const bufferSize = Math.floor(ctx.sampleRate * dur);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < bufferSize; i++) {
+    const r = Math.random() * 2 - 1;
+    last = (last + 0.025 * r) / 1.025;
+    data[i] = last * 3.0;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 700 + Math.random() * 200;
+  filter.Q.value = 2.5;
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.25, t + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+  src.start(t); src.stop(t + dur);
+}
+
+function playBirdChirp() {
+  if (!audioOn) return;
+  const ctx = getCtx();
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  osc.type = 'sine';
+  const base = 1800 + Math.random() * 2200;
+  const dur = 0.12 + Math.random() * 0.1;
+  osc.frequency.setValueAtTime(base, t);
+  osc.frequency.exponentialRampToValueAtTime(base * (1.4 + Math.random() * 0.4), t + dur * 0.3);
+  osc.frequency.exponentialRampToValueAtTime(base * 0.55, t + dur);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(0.06, t + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(t); osc.stop(t + dur + 0.05);
+}
+
+function scheduleBirds() {
+  if (birdTimer) { clearTimeout(birdTimer); birdTimer = null; }
+  if (!audioOn) return;
+  const next = 2500 + Math.random() * 6500;
+  birdTimer = setTimeout(() => {
+    playBirdChirp();
+    // Sometimes a quick reply chirp
+    if (Math.random() > 0.4) setTimeout(playBirdChirp, 120 + Math.random() * 250);
+    if (Math.random() > 0.7) setTimeout(playBirdChirp, 350 + Math.random() * 400);
+    scheduleBirds();
+  }, next);
+}
+
+const audioBtn = document.getElementById('audioToggle');
+function refreshAudioBtn() {
+  if (audioOn) {
+    audioBtn.textContent = '🔊';
+    audioBtn.classList.remove('muted');
+  } else {
+    audioBtn.textContent = '🔇';
+    audioBtn.classList.add('muted');
+  }
+}
+refreshAudioBtn();
+
+audioBtn.addEventListener('click', () => {
+  audioOn = !audioOn;
+  localStorage.setItem('shtorix_audio_off', audioOn ? '0' : '1');
+  refreshAudioBtn();
+  if (audioOn) {
+    getCtx();
+    playBirdChirp();
+    scheduleBirds();
+  } else if (birdTimer) {
+    clearTimeout(birdTimer); birdTimer = null;
+  }
+});
+
+// Auto-start audio on first interaction (browsers require user gesture)
+let audioStarted = false;
+function startAudioOnce() {
+  if (audioStarted) return;
+  audioStarted = true;
+  if (audioOn) {
+    getCtx();
+    setTimeout(() => { playBirdChirp(); scheduleBirds(); }, 800);
+  }
+}
+window.addEventListener('pointerdown', startAudioOnce, { once: true });
+window.addEventListener('keydown', startAudioOnce, { once: true });
+
 // ============ Interaction ============
 function getPointer(e) {
   const rect = renderer.domElement.getBoundingClientRect();
@@ -4871,6 +5018,10 @@ renderer.domElement.addEventListener('pointermove', (e) => {
   hit.sub(dragOffset);
   hit.x = Math.max(-ROOM / 2 + 0.5, Math.min(ROOM / 2 - 0.5, hit.x));
   hit.z = Math.max(-ROOM / 2 + 0.5, Math.min(ROOM / 2 - 0.5, hit.z));
+  // Play wood sound only if position actually changed
+  const dx = hit.x - selected.group.position.x;
+  const dz = hit.z - selected.group.position.z;
+  if (Math.abs(dx) + Math.abs(dz) > 0.005) playWoodSound();
   selected.group.position.x = hit.x;
   selected.group.position.z = hit.z;
   selectionRing.position.set(hit.x, 0.02, hit.z);
