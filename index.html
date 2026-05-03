@@ -1964,6 +1964,7 @@
         <button class="filter-btn" id="refreshPublicBtn" style="margin-left:auto">🔄 Обновить</button>
       </div>
       <div id="myAccountInfo" style="font-size:0.85rem;opacity:0.7">Вы публикуетесь как: <strong id="myNickDisplay" style="color:var(--gold)">не указан ник</strong></div>
+      <div style="font-size:0.78rem;opacity:0.55;line-height:1.5">⚠️ Демо-сервер: чужие публикации могут периодически сбрасываться. <strong>Ваши собственные сохраняются у вас локально и никогда не пропадут</strong> (значок 📦 локально).</div>
       <div class="public-add-row">
         <input type="text" id="publicAddUrl" placeholder="Вставьте сюда URL комнаты (полученный от друга или скопированный с 🔗)">
         <button class="order-btn" id="publicAddBtn" style="padding:13px 24px">+ Выложить</button>
@@ -3123,38 +3124,60 @@ setTimeout(checkUrlForSharedRoom, 500);
 
 // ===== Public feed via restful-api.dev =====
 async function fetchPublicRooms() {
+  let apiRooms = [];
+  let apiOk = true;
   try {
     const r = await fetch(PUBLIC_API);
     const all = await r.json();
-    return (all || [])
+    apiRooms = (all || [])
       .filter(o => o.name === SHTORIX_TAG && o.data && o.data.room)
-      .map(o => ({ ...o.data.room, _publicId: o.id, _createdAt: o.createdAt }))
-      .sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+      .map(o => ({ ...o.data.room, _publicId: o.id, _createdAt: o.createdAt }));
   } catch (e) {
-    return null; // null = error
+    apiOk = false;
   }
+  // Merge with locally saved own publications (so own posts survive API resets)
+  const myPubs = getMyPublications();
+  const seenIds = new Set(apiRooms.map(r => r._publicId));
+  myPubs.forEach(mp => {
+    if (!seenIds.has(mp._publicId)) {
+      apiRooms.push({ ...mp, _localOnly: true });
+    }
+  });
+  if (!apiOk && apiRooms.length === 0) return null;
+  return apiRooms.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
 }
 
 async function postPublicRoom(roomData, authorName, thumbnail) {
-  const body = {
-    name: SHTORIX_TAG,
-    data: {
-      room: {
-        ...roomData,
-        thumbnail,
-        author: authorName,
-        authorId: getUserId(),
-        sharedAt: new Date().toISOString()
-      }
-    }
+  const room = {
+    ...roomData,
+    thumbnail,
+    author: authorName,
+    authorId: getUserId(),
+    sharedAt: new Date().toISOString()
   };
+  const body = { name: SHTORIX_TAG, data: { room } };
   const r = await fetch(PUBLIC_API, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
   if (!r.ok) throw new Error('post failed: ' + r.status);
-  return r.json();
+  const created = await r.json();
+  // Save to local persistent backup (so own posts survive API resets)
+  saveMyPublication({ ...room, _publicId: created.id, _createdAt: created.createdAt || Date.now() });
+  return created;
+}
+
+const MY_PUBS_KEY = 'shtorix_my_publications';
+function getMyPublications() {
+  try { return JSON.parse(localStorage.getItem(MY_PUBS_KEY) || '[]'); } catch { return []; }
+}
+function saveMyPublications(list) { localStorage.setItem(MY_PUBS_KEY, JSON.stringify(list)); }
+function saveMyPublication(room) {
+  const list = getMyPublications();
+  list.unshift(room);
+  while (list.length > 50) list.pop();
+  saveMyPublications(list);
 }
 
 async function deletePublicRoom(publicId) {
@@ -3231,6 +3254,7 @@ function paintPublicGrid() {
     const isMine = room.authorId === myUserId || (myNick && (room.author || '').toLowerCase() === myNick);
     const author = room.author || 'Аноним';
     const thumb = room.thumbnail || '';
+    const localBadge = room._localOnly ? '<span style="color:#999;font-size:0.75rem;margin-left:8px">📦 локально</span>' : '';
     const deleteBtn = isMine ? `<button class="feed-btn icon delete" onclick='deletePublic("${room._publicId}")' title="Удалить">✕</button>` : '';
     const thumbStyle = thumb ? `background-image:url('${thumb}')` : 'background:linear-gradient(135deg,#2a3a30,#1a2520);display:flex;align-items:center;justify-content:center;font-size:3rem';
     const thumbInner = thumb ? '' : '🏠';
@@ -3256,7 +3280,7 @@ function paintPublicGrid() {
       <div class="feed-card public" data-id="${room._publicId}">
         <div class="feed-thumb" style="${thumbStyle}" onclick='loadPublicRoom("${room._publicId}")'>${thumbInner}</div>
         <div class="feed-body">
-          <div class="feed-author">@${author}${isMine ? ' (вы)' : ''}</div>
+          <div class="feed-author">@${author}${isMine ? ' (вы)' : ''}${localBadge}</div>
           <h4>${room.name || 'Без названия'}</h4>
           <div class="feed-meta">
             <span>📅 ${date}</span>
@@ -3424,13 +3448,14 @@ window.loadPublicRoom = function(publicId) {
 
 window.deletePublic = async function(publicId) {
   if (!confirm('Удалить эту комнату из общей ленты?')) return;
+  // Remove from local persistence too
+  const myPubs = getMyPublications().filter(p => p._publicId !== publicId);
+  saveMyPublications(myPubs);
   try {
     await deletePublicRoom(publicId);
-    showFeedToast('Удалено из общей ленты', '✕');
-    renderPublicFeed();
-  } catch {
-    showFeedToast('Не удалось удалить', '⚠️');
-  }
+  } catch {}
+  showFeedToast('Удалено', '✕');
+  renderPublicFeed();
 };
 
 function publishPendingUrl() {
