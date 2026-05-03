@@ -1314,6 +1314,105 @@
   }
 
   /* ===== ROOMS FEED ===== */
+  .feed-tabs {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+  }
+  .feed-tab {
+    padding: 12px 28px;
+    background: rgba(31,77,46,0.3);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 50px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .feed-tab:hover { border-color: var(--gold); transform: translateY(-2px); }
+  .feed-tab.active {
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    border-color: transparent;
+    box-shadow: 0 6px 20px rgba(212,184,96,0.4);
+  }
+  .feed-tab .count {
+    margin-left: 8px;
+    padding: 2px 9px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .feed-tab.active .count { background: rgba(255,255,255,0.3); }
+  .feed-author {
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .feed-author::before { content: '👤'; }
+  .feed-card.public { border-color: rgba(212,184,96,0.35); }
+  .feed-card.public .feed-thumb::before {
+    content: '🌍 Публично';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px);
+    color: var(--gold);
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    z-index: 2;
+  }
+  .feed-loader {
+    text-align: center;
+    padding: 50px;
+    opacity: 0.7;
+  }
+  .feed-loader .spin {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(212,184,96,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+  }
+  .nickname-prompt {
+    background: rgba(212,184,96,0.1);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 25px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .nickname-prompt label { color: var(--gold); white-space: nowrap; font-size: 0.9rem; }
+  .nickname-prompt input {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 16px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    color: var(--cream);
+    font-family: inherit;
+    outline: none;
+  }
+  .nickname-prompt input:focus { border-color: var(--gold); }
   .feed-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -1669,16 +1768,37 @@
 <section class="section" id="feed-section">
   <div class="section-header">
     <span class="section-tag">Лента</span>
-    <h2 class="section-title">Мои Комнаты</h2>
-    <p class="section-desc">Все ваши сохранённые интерьеры. Загружайте обратно в конструктор одним кликом, скачивайте как картинку или удаляйте ненужное.</p>
+    <h2 class="section-title">Лента Интерьеров</h2>
+    <p class="section-desc">Сохраняйте свои интерьеры, делитесь ими с другими или вдохновляйтесь работами всех пользователей Shtorix.</p>
   </div>
-  <div id="feedContent">
+  <div class="feed-tabs">
+    <button class="feed-tab active" data-tab="mine">📁 Мои комнаты <span class="count" id="mineCount">0</span></button>
+    <button class="feed-tab" data-tab="public">🌍 Общая лента <span class="count" id="publicCount">0</span></button>
+  </div>
+  <div class="nickname-prompt" id="nicknamePrompt" style="display:none">
+    <label>👤 Ваш ник для общей ленты:</label>
+    <input type="text" id="nicknameInput" placeholder="Аноним" maxlength="24">
+    <button class="feed-btn load" onclick="saveNickname()" style="flex:0 0 auto">Сохранить</button>
+  </div>
+  <div id="myFeedContent">
     <div class="feed-empty" id="feedEmpty">
       <span class="empty-icon">🏠</span>
       <p><strong>Пока ничего не сохранено</strong></p>
       <p style="font-size:0.9rem">Соберите интерьер в 3D-конструкторе выше и нажмите «📁 Сохранить в ленту»</p>
     </div>
     <div class="feed-grid" id="feedGrid"></div>
+  </div>
+  <div id="publicFeedContent" style="display:none">
+    <div class="feed-loader" id="publicLoader">
+      <div class="spin"></div>
+      <p>Загружаем общую ленту...</p>
+    </div>
+    <div class="feed-grid" id="publicFeedGrid"></div>
+    <div class="feed-empty" id="publicFeedEmpty" style="display:none">
+      <span class="empty-icon">🌍</span>
+      <p><strong>Общая лента пуста</strong></p>
+      <p style="font-size:0.9rem">Стань первым, кто поделился своим интерьером!</p>
+    </div>
   </div>
 </section>
 
@@ -2589,6 +2709,10 @@ MTC.init();
 
 // ===== ROOMS FEED =====
 const ROOMS_KEY = 'shtorix_rooms';
+const NICKNAME_KEY = 'shtorix_nickname';
+const USERID_KEY = 'shtorix_userid';
+const PUBLIC_FEED_URL = 'https://jsonblob.com/api/jsonBlob/019def1c-fc0e-75be-826c-104bf2a43811';
+
 function getRooms() {
   try { return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]'); }
   catch { return []; }
@@ -2596,6 +2720,26 @@ function getRooms() {
 function saveRoomsList(rooms) {
   localStorage.setItem(ROOMS_KEY, JSON.stringify(rooms));
 }
+function getUserId() {
+  let id = localStorage.getItem(USERID_KEY);
+  if (!id) {
+    id = 'u_' + Math.random().toString(36).slice(2, 11);
+    localStorage.setItem(USERID_KEY, id);
+  }
+  return id;
+}
+function getNickname() {
+  return localStorage.getItem(NICKNAME_KEY) || '';
+}
+window.saveNickname = function() {
+  const v = document.getElementById('nicknameInput').value.trim().slice(0, 24);
+  if (!v) return;
+  localStorage.setItem(NICKNAME_KEY, v);
+  document.getElementById('nicknamePrompt').style.display = 'none';
+  if (window._pendingShareRoom) {
+    sharePendingRoom();
+  }
+};
 
 function showFeedToast(msg, icon = '📁') {
   const toast = document.createElement('div');
@@ -2635,6 +2779,7 @@ function renderFeed() {
   const grid = document.getElementById('feedGrid');
   const empty = document.getElementById('feedEmpty');
   const rooms = getRooms();
+  document.getElementById('mineCount').textContent = rooms.length;
   if (rooms.length === 0) {
     grid.innerHTML = '';
     empty.style.display = '';
@@ -2644,11 +2789,14 @@ function renderFeed() {
   grid.innerHTML = rooms.map(room => {
     const date = new Date(room.date).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
     const price = (room.totalPrice || 0).toLocaleString('ru-RU');
+    const sharedBadge = room.sharedAt ? '<span style="color:var(--gold);font-size:0.8rem"> · 🌍 опубликовано</span>' : '';
+    const shareLabel = room.sharedAt ? '✓ Опубликовано' : '🌍 Поделиться';
+    const shareDisabled = room.sharedAt ? 'disabled style="opacity:0.6;cursor:default"' : '';
     return `
       <div class="feed-card" data-id="${room.id}">
         <div class="feed-thumb" style="background-image:url('${room.thumbnail}')" onclick="openLightbox('${room.thumbnail.replace(/'/g, "\\'")}')"></div>
         <div class="feed-body">
-          <h4>${room.name}</h4>
+          <h4>${room.name}${sharedBadge}</h4>
           <div class="feed-meta">
             <span>📅 ${date}</span>
             <span class="feed-price">🪙 ${price} MTC</span>
@@ -2656,6 +2804,7 @@ function renderFeed() {
           <div class="feed-meta"><span>📦 ${room.itemCount || 0} предметов</span></div>
           <div class="feed-actions">
             <button class="feed-btn load" onclick="loadFromFeed('${room.id}')">↻ Загрузить</button>
+            <button class="feed-btn icon" onclick="shareToPublic('${room.id}')" title="${shareLabel}" ${shareDisabled}>🌍</button>
             <button class="feed-btn icon download" onclick="downloadFromFeed('${room.id}')" title="Скачать">⬇</button>
             <button class="feed-btn icon delete" onclick="deleteFromFeed('${room.id}')" title="Удалить">✕</button>
           </div>
@@ -2664,6 +2813,150 @@ function renderFeed() {
     `;
   }).join('');
 }
+
+// ===== Public feed =====
+async function fetchPublicFeed() {
+  try {
+    const r = await fetch(PUBLIC_FEED_URL);
+    const data = await r.json();
+    return Array.isArray(data.rooms) ? data.rooms : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+async function pushPublicFeed(rooms) {
+  await fetch(PUBLIC_FEED_URL, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rooms, app: 'shtorix', version: 1 })
+  });
+}
+
+async function renderPublicFeed() {
+  const loader = document.getElementById('publicLoader');
+  const grid = document.getElementById('publicFeedGrid');
+  const empty = document.getElementById('publicFeedEmpty');
+  loader.style.display = '';
+  grid.innerHTML = '';
+  empty.style.display = 'none';
+  const rooms = await fetchPublicFeed();
+  document.getElementById('publicCount').textContent = rooms.length;
+  loader.style.display = 'none';
+  if (rooms.length === 0) {
+    empty.style.display = '';
+    return;
+  }
+  const myUserId = getUserId();
+  grid.innerHTML = rooms.map(room => {
+    const date = new Date(room.date).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const price = (room.totalPrice || 0).toLocaleString('ru-RU');
+    const isMine = room.authorId === myUserId;
+    const author = room.authorName || 'Аноним';
+    const deleteBtn = isMine ? `<button class="feed-btn icon delete" onclick="deletePublic('${room.id}')" title="Удалить">✕</button>` : '';
+    return `
+      <div class="feed-card public" data-id="${room.id}">
+        <div class="feed-thumb" style="background-image:url('${room.thumbnail}')" onclick="openLightbox('${room.thumbnail.replace(/'/g, "\\'")}')"></div>
+        <div class="feed-body">
+          <div class="feed-author">@${author}${isMine ? ' (вы)' : ''}</div>
+          <h4>${room.name}</h4>
+          <div class="feed-meta">
+            <span>📅 ${date}</span>
+            <span class="feed-price">🪙 ${price} MTC</span>
+          </div>
+          <div class="feed-meta"><span>📦 ${room.itemCount || 0} предметов</span></div>
+          <div class="feed-actions">
+            <button class="feed-btn load" onclick='loadPublicRoom("${room.id}")'>↻ Загрузить себе</button>
+            ${deleteBtn}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  // Cache for loadPublicRoom
+  window._publicRooms = rooms;
+}
+
+window.shareToPublic = function(id) {
+  const room = getRooms().find(r => r.id === id);
+  if (!room) return;
+  if (!getNickname()) {
+    document.getElementById('nicknamePrompt').style.display = 'flex';
+    document.getElementById('nicknameInput').focus();
+    window._pendingShareRoom = id;
+    return;
+  }
+  doShareToPublic(room);
+};
+
+function sharePendingRoom() {
+  const id = window._pendingShareRoom;
+  window._pendingShareRoom = null;
+  const room = getRooms().find(r => r.id === id);
+  if (room) doShareToPublic(room);
+}
+
+async function doShareToPublic(room) {
+  showFeedToast('Публикуем в общую ленту...', '🌍');
+  try {
+    const rooms = await fetchPublicFeed();
+    const publicRoom = {
+      ...room,
+      authorId: getUserId(),
+      authorName: getNickname() || 'Аноним',
+      sharedAt: new Date().toISOString()
+    };
+    rooms.unshift(publicRoom);
+    // Cap public feed at 40 rooms total to stay under storage limits
+    while (rooms.length > 40) rooms.pop();
+    await pushPublicFeed(rooms);
+    // Mark local room as shared
+    const myRooms = getRooms();
+    const localRoom = myRooms.find(r => r.id === room.id);
+    if (localRoom) localRoom.sharedAt = publicRoom.sharedAt;
+    saveRoomsList(myRooms);
+    renderFeed();
+    showFeedToast('Опубликовано! Все увидят ваш интерьер', '🎉');
+    if (currentTab === 'public') renderPublicFeed();
+  } catch (e) {
+    showFeedToast('Не удалось опубликовать. Попробуйте позже.', '⚠️');
+  }
+}
+
+window.loadPublicRoom = function(id) {
+  const room = (window._publicRooms || []).find(r => r.id === id);
+  if (!room || !window.loadRoom) return;
+  window.loadRoom(room);
+  showFeedToast(`Загружен интерьер от @${room.authorName || 'Аноним'}`, '↻');
+  setTimeout(() => {
+    document.getElementById('builder-section').scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+};
+
+window.deletePublic = async function(id) {
+  if (!confirm('Удалить эту комнату из общей ленты?')) return;
+  const rooms = await fetchPublicFeed();
+  const filtered = rooms.filter(r => r.id !== id);
+  await pushPublicFeed(filtered);
+  renderPublicFeed();
+};
+
+let currentTab = 'mine';
+document.querySelectorAll('.feed-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.feed-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = btn.dataset.tab;
+    document.getElementById('myFeedContent').style.display = currentTab === 'mine' ? '' : 'none';
+    document.getElementById('publicFeedContent').style.display = currentTab === 'public' ? '' : 'none';
+    if (currentTab === 'public') renderPublicFeed();
+  });
+});
+
+// Pre-load public feed counter on page load (background)
+fetchPublicFeed().then(rooms => {
+  document.getElementById('publicCount').textContent = rooms.length;
+});
 
 window.loadFromFeed = function(id) {
   const room = getRooms().find(r => r.id === id);
