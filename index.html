@@ -1467,6 +1467,11 @@
     transition: all 0.3s;
   }
   .public-add-row input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
+  .public-filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 
   /* ===== Reactions & Comments ===== */
   .reactions {
@@ -1949,6 +1954,13 @@
       <div class="public-search-box">
         <span class="search-icon">🔍</span>
         <input type="text" id="publicSearch" placeholder="Поиск по интерьерам и авторам...">
+      </div>
+      <div class="public-filter-chips">
+        <button class="filter-btn active" data-pub-filter="all">Все</button>
+        <button class="filter-btn" data-pub-filter="mine">👤 Только мои</button>
+        <button class="filter-btn" data-pub-filter="liked">❤️ Я лайкнул</button>
+        <button class="filter-btn" data-pub-filter="popular">🔥 Популярные</button>
+        <button class="filter-btn" data-pub-filter="recent">🆕 Недавние</button>
       </div>
       <div class="public-add-row">
         <input type="text" id="publicAddUrl" placeholder="Вставьте сюда URL комнаты (полученный от друга или скопированный с 🔗)">
@@ -3149,6 +3161,7 @@ async function deletePublicRoom(publicId) {
 
 let publicRoomsCache = [];
 let publicSearchQuery = '';
+let publicFilter = 'all';
 
 async function renderPublicFeed() {
   const loader = document.getElementById('publicLoader');
@@ -3174,7 +3187,20 @@ function paintPublicGrid() {
   const grid = document.getElementById('publicFeedGrid');
   const empty = document.getElementById('publicFeedEmpty');
   const q = publicSearchQuery.toLowerCase().trim();
-  let rooms = publicRoomsCache;
+  const myId = getUserId();
+  let rooms = publicRoomsCache.slice();
+
+  // Apply chip filter
+  if (publicFilter === 'mine') {
+    rooms = rooms.filter(r => r.authorId === myId);
+  } else if (publicFilter === 'liked') {
+    rooms = rooms.filter(r => (r.likes || []).includes(myId));
+  } else if (publicFilter === 'popular') {
+    rooms = rooms.slice().sort((a, b) => (b.likes || []).length - (a.likes || []).length);
+  } else if (publicFilter === 'recent') {
+    rooms = rooms.slice().sort((a, b) => new Date(b.sharedAt || b._createdAt || 0) - new Date(a.sharedAt || a._createdAt || 0));
+  }
+
   if (q) {
     rooms = rooms.filter(r =>
       (r.name || '').toLowerCase().includes(q) ||
@@ -3185,14 +3211,16 @@ function paintPublicGrid() {
     grid.innerHTML = '';
     if (publicRoomsCache.length === 0) {
       empty.innerHTML = '<span class="empty-icon">🌍</span><p><strong>В общей ленте пока пусто</strong></p><p style="font-size:0.9rem">Стань первым: купи интерьер, скопируй ссылку 🔗 и вставь её в поле выше.</p>';
+    } else if (publicFilter === 'mine') {
+      empty.innerHTML = '<span class="empty-icon">👤</span><p><strong>Вы пока не публиковали</strong></p><p style="font-size:0.9rem">Вернитесь в «📁 Мои комнаты», нажмите 🔗 на купленной комнате, потом «+ Выложить» в этой ленте.</p>';
     } else {
-      empty.innerHTML = '<span class="empty-icon">🔍</span><p><strong>Ничего не найдено</strong></p><p style="font-size:0.9rem">Попробуй другой запрос или очисти поиск.</p>';
+      empty.innerHTML = '<span class="empty-icon">🔍</span><p><strong>Ничего не найдено</strong></p><p style="font-size:0.9rem">Попробуй другой запрос или другой фильтр.</p>';
     }
     empty.style.display = '';
     return;
   }
   empty.style.display = 'none';
-  const myUserId = getUserId();
+  const myUserId = myId;
   grid.innerHTML = rooms.map(room => {
     const date = new Date(room.sharedAt || room._createdAt || Date.now()).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
     const price = (room.totalPrice || 0).toLocaleString('ru-RU');
@@ -3455,6 +3483,15 @@ document.getElementById('publicAddBtn').addEventListener('click', () => {
 document.getElementById('publicSearch').addEventListener('input', (e) => {
   publicSearchQuery = e.target.value;
   paintPublicGrid();
+});
+
+document.querySelectorAll('[data-pub-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-pub-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    publicFilter = btn.dataset.pubFilter;
+    paintPublicGrid();
+  });
 });
 
 let currentTab = 'mine';
