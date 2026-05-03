@@ -39,7 +39,7 @@
     overflow: hidden;
     background:
       linear-gradient(180deg, rgba(10,20,16,0.6) 0%, rgba(10,20,16,0.95) 100%),
-      url('https://commons.wikimedia.org/wiki/Special:FilePath/Hotel%20Transvaal%20Indiase%20kamer.jpg?width=1600') center/cover;
+      url('https://commons.wikimedia.org/wiki/Special:FilePath/Sofa3800ppx.jpg?width=1600') center/cover;
   }
   .hero::before {
     content: '';
@@ -1054,6 +1054,7 @@
     <button class="filter-btn" data-filter="tables">Столы</button>
     <button class="filter-btn" data-filter="storage">Хранение</button>
     <button class="filter-btn" data-filter="bedroom">Спальня</button>
+    <button class="filter-btn" data-filter="office">Кабинет</button>
     <button class="filter-btn" data-filter="decor">Декор</button>
   </div>
   <div class="croc-grid" id="crocGrid"></div>
@@ -1076,7 +1077,15 @@
       <button class="item-btn" data-add="wardrobe"><span class="ico">🚪</span>Шкаф<span class="price">35 000 ₽</span></button>
       <button class="item-btn" data-add="bed"><span class="ico">🛏️</span>Кровать<span class="price">40 000 ₽</span></button>
       <button class="item-btn" data-add="carpet"><span class="ico">🟫</span>Ковёр<span class="price">12 000 ₽</span></button>
+      <button class="item-btn" data-add="desk"><span class="ico">🖥️</span>Письменный стол<span class="price">22 000 ₽</span></button>
+      <button class="item-btn" data-add="coffeeTable"><span class="ico">☕</span>Журнальный столик<span class="price">10 000 ₽</span></button>
+      <button class="item-btn" data-add="bookshelf"><span class="ico">📚</span>Книжный шкаф<span class="price">28 000 ₽</span></button>
+      <button class="item-btn" data-add="dresser"><span class="ico">🗄️</span>Комод<span class="price">26 000 ₽</span></button>
+      <button class="item-btn" data-add="mirror"><span class="ico">🪞</span>Зеркало<span class="price">9 000 ₽</span></button>
+      <button class="item-btn" data-add="nightstand"><span class="ico">🕯️</span>Тумбочка<span class="price">7 500 ₽</span></button>
+      <button class="item-btn" data-add="tv"><span class="ico">📺</span>ТВ-тумба<span class="price">15 000 ₽</span></button>
       <button class="item-btn" data-add="lamp"><span class="ico">💡</span>Торшер<span class="price">8 000 ₽</span></button>
+      <button class="item-btn" data-add="ceilingLamp"><span class="ico">🔆</span>Люстра<span class="price">11 000 ₽</span></button>
       <button class="item-btn" data-add="plant"><span class="ico">🪴</span>Растение<span class="price">4 500 ₽</span></button>
       <h4 style="margin-top:25px">Стены</h4>
       <input type="color" id="wallColor" value="#d8c9a8" style="width:100%;height:40px;border-radius:10px;border:1px solid rgba(212,184,96,0.3);background:transparent;cursor:pointer">
@@ -1228,7 +1237,7 @@ const crocodiles = [
     short: "Граница между домом и миром. Регулируют свет, тепло и настроение.",
     description: "Шторы — это первое, что встречает утренний свет, и последнее, что закрывает день. От лёгкого тюля, играющего в потоках воздуха, до тяжёлых бархатных портьер, придающих комнате торжественность — текстиль на окне формирует атмосферу комнаты сильнее любого другого предмета. Грамотно подобранные занавеси регулируют освещение, скрадывают звуки и визуально вытягивают пространство.",
     badge: "Классика интерьера",
-    photos: ["Hotel Transvaal Indiase kamer.jpg", "ChateaudAmboiseChambre01.jpg", "Gordijnen aan venster.JPG", "Bottle Top Curtain.jpg", "BernheimerHouseTub.jpg", "Fabric shop in Nara.jpg"],
+    photos: ["Gordijnen aan venster.JPG", "17th century embroidered curtain motif.jpg", "26. juli gardinvindu (2).jpg", "A curtain in the door with a wall clock.jpg", "Bamboo curtain - Freedom Theatre in Jenin 011 - Aug 2011.jpg", "2016-01-30 Häkelgardine.jpg"],
     info: {
       "Материал": "Лён, хлопок, бархат, тюль",
       "Стиль": "Классика, модерн, минимализм",
@@ -1324,7 +1333,7 @@ const crocodiles = [
     short: "Треть жизни мы проводим здесь — выбор кровати важнее, чем кажется.",
     description: "Кровать — это не просто мебель, а инструмент для качественного сна. Высокое изголовье из мягкого велюра, ортопедическое основание из ламелей, матрас с правильной поддержкой позвоночника — всё работает на восстановление тела. От минималистичных платформ до пышных кроватей с балдахином: спальня — самое личное пространство дома, и кровать в ней — главная героиня.",
     badge: "Премиум",
-    photos: ["Bed in hotel room 5.jpg", "Compiègne Château 09.jpg", "Bed of Ware.jpg", "Daughter's bed, Shikumen Open House Museum 1.JPG", "A 10 feet high ancient bed in National Museum of Bangladesh collected from Lohagara,Narail.jpg"],
+    photos: ["Bed in hotel room 5.jpg", "Anottoman-storage-bed.jpg", "Altes Schlafzimmer.JPG", "Arte Pura by Daniela Dallavalle.jpg", "Bed of Ware.jpg"],
     info: {
       "Размер": "Single, Queen, King — 90/160/180 см",
       "Каркас": "Дерево, металл, мягкая обивка",
@@ -1334,13 +1343,93 @@ const crocodiles = [
     }
   },
   {
+    name: "Письменный стол",
+    latin: "Кабинет и работа",
+    tags: ["tables", "office"],
+    short: "Рабочее место, где рождаются идеи и записываются мысли.",
+    description: "Письменный стол — пространство концентрации. От строгих столов с множеством ящиков для бумаг до минималистичных современных моделей с кабель-менеджментом и подъёмным механизмом — мебель для работы должна быть функциональной без компромиссов. Ширина столешницы 120–160 см, высота 72–75 см, удобное место под клавиатуру и монитор — это базовые требования для долгих часов сосредоточенной работы.",
+    badge: "Для кабинета",
+    photos: ["17thCenturyDeskFranzMayer.jpg", "Bureau table MET DP108643.jpg", "22 West - home office.jpg", "Adjustable Desk (8711703371).jpg", "Aerodynamic desk img 1078 (2).jpg"],
+    info: {
+      "Ширина": "От 100 до 200 см",
+      "Глубина": "60–80 см",
+      "Высота": "72–75 см",
+      "Материал": "Массив, ЛДСП, металл, стекло",
+      "Особенность": "Ящики, кабель-менеджмент"
+    }
+  },
+  {
+    name: "Журнальный столик",
+    latin: "Гостиная-акцент",
+    tags: ["tables", "decor"],
+    short: "Низкий столик у дивана для книг, чая и хорошего настроения.",
+    description: "Журнальный столик — компаньон дивана и хранитель уютных вечеров. Здесь стоят чашки кофе, лежат книги, журналы и пульт. Стеклянная столешница на металлических ножках добавит лёгкости интерьеру; массив дерева — фактуры; модели с нишами и ящиками — функциональности. Высота обычно 35–45 см, чтобы было удобно дотянуться сидя на диване.",
+    badge: "Гостиная",
+    photos: ["1970s Tile Top Coffee Table.jpg", "20101024200DR Beistelltisch mit Delfter Fliesen.jpg", "A root-carving table.jpg", "1990-Couchtisch-Puppe-XYNN-Factory.jpg", "1991-Couchtisch-Lichtfuß-XYNN-Factory.jpg"],
+    info: {
+      "Высота": "35–45 см",
+      "Форма": "Круглый, овальный, прямоугольный",
+      "Материал": "Дерево, стекло, металл",
+      "Размер": "От 60×60 до 130×70 см",
+      "Особенность": "Часто с ящиками или нишей"
+    }
+  },
+  {
+    name: "Книжный шкаф",
+    latin: "Библиотека дома",
+    tags: ["storage"],
+    short: "Книги — лучший интерьер. Полки придают комнате характер.",
+    description: "Книжный шкаф — это не только хранение, но и часть личности владельца. От открытых стеллажей в скандинавском стиле до тяжёлых дубовых библиотек со стеклянными дверцами — каждый формат служит разным задачам. Современные модели часто комбинируют закрытые секции для документов и открытые полки для книг и предметов декора. Глубина 25–35 см достаточна для большинства книг.",
+    badge: "Стеллаж",
+    photos: ["Configura PGC Example 2.jpg", "500px photo (66157623).jpeg", "African Studies Bookshelf.jpg", "Acervo bibliográfico.jpg", "Account books (40161579285).jpg"],
+    info: {
+      "Высота": "180–240 см",
+      "Глубина": "25–40 см",
+      "Полки": "Регулируемые по высоте",
+      "Тип": "Открытый, закрытый, комбинированный",
+      "Материал": "ЛДСП, МДФ, массив"
+    }
+  },
+  {
+    name: "Комод",
+    latin: "Спальня и порядок",
+    tags: ["storage", "bedroom"],
+    short: "Низкий шкаф с ящиками для одежды и мелочей — классика спальни.",
+    description: "Комод — практичное решение для спальни и прихожей. В отличие от шкафа, он работает горизонтально: широкая столешница становится местом для лампы, фоторамок или зеркала, а 4–6 выдвижных ящиков вмещают весь сезонный гардероб. Качественные модели имеют доводчики, упоры и задние стенки из ХДФ, что продлевает срок службы фурнитуры на десятилетия.",
+    badge: "Хранение",
+    photos: ["Luikse Commode, KBS-FRB 01.jpg", "Frankf. Nasenschrank.jpg", "Kas, early 19th century.jpg", "Musée pyreneen.jpg", "Spiegelschrank.jpg"],
+    info: {
+      "Высота": "80–100 см",
+      "Ширина": "100–160 см",
+      "Глубина": "45–55 см",
+      "Ящики": "От 3 до 7",
+      "Особенность": "Часто с доводчиками"
+    }
+  },
+  {
+    name: "Зеркало",
+    latin: "Свет и пространство",
+    tags: ["decor"],
+    short: "Удваивает свет, добавляет глубины комнате и помогает по утрам.",
+    description: "Зеркало — самый недооценённый предмет интерьера. Большое напольное зеркало рядом с окном визуально удваивает помещение и количество света; зеркальная стена в узком коридоре расширяет пространство; декоративное зеркало с резной рамой становится фокусом стены. Венецианские зеркала с фасеткой и серебряной амальгамой ценятся не меньше живописи. Угол наклона должен быть учтён, чтобы видеть себя в полный рост.",
+    badge: "Декор",
+    photos: ["Mirror.jpg", "130 - Grove Of Mirrors, Hilary Arnold Baker (4655892606).jpg", "Demo Day 2016 - Design Center (19).jpg", "Dunville's Whisky Pub Mirror 01.jpeg"],
+    info: {
+      "Тип": "Настенное, напольное, в шкафу",
+      "Размер": "От 40 см до 220 см в высоту",
+      "Рама": "Дерево, металл, без рамы",
+      "Стиль": "Классика, лофт, скандинавский",
+      "Особенность": "Удваивает свет в комнате"
+    }
+  },
+  {
     name: "Ковёр",
     latin: "Текстура и тепло",
     tags: ["decor"],
     short: "Ткёт уют под ногами и собирает интерьер в единое целое.",
     description: "Ковёр — это последний штрих, который превращает комнату в пространство. Шерстяные персидские ковры с тысячелетней историей хранят память поколений ткачей; современные модели из джута или вискозы привносят в дом природную фактуру. Ковёр гасит шаги, утепляет пол, объединяет мебельную группу и задаёт акцент. Размер должен соответствовать зоне: под обеденный стол — больше стола на 60 см с каждой стороны.",
     badge: "Декор-акцент",
-    photos: ["A carpet seller in Jaipur.jpg", "AntiqueUsakCarpetLate19thCentury.jpg", "Ardabil Carpet.jpg", "Berber Carpet (macro).jpg", "Carpet, Iran, Vicinity of Mashhad (Baluchistan), 20th century.jpeg", "Carpet Tree of Life.JPG"],
+    photos: ["AntiqueUsakCarpetLate19thCentury.jpg", "Ardabil Carpet.jpg", "Berber Carpet (macro).jpg", "Carpet, Iran, Vicinity of Mashhad (Baluchistan), 20th century.jpeg", "Carpet in Preparation on a Carpet Loom.jpg", "A carpet seller in Jaipur.jpg"],
     info: {
       "Материал": "Шерсть, хлопок, джут, вискоза",
       "Тип ворса": "Короткий, длинный, безворсовый",
@@ -1698,6 +1787,90 @@ const FURNITURE = {
       leaf.castShadow = true;
       g.add(leaf);
     }
+    return g;
+  }},
+  desk: { name: 'Письменный стол', icon: '🖥️', price: 22000, color: 0x4a3525, build(c) {
+    const g = new THREE.Group();
+    const top = meshBox(1.6, 0.06, 0.7, c); top.position.y = 0.74; g.add(top);
+    const drawerBlock = meshBox(0.5, 0.6, 0.65, c); drawerBlock.position.set(0.5, 0.4, 0); g.add(drawerBlock);
+    const drawer1 = meshBox(0.45, 0.15, 0.05, 0x6e5040); drawer1.position.set(0.5, 0.55, 0.33); g.add(drawer1);
+    const drawer2 = drawer1.clone(); drawer2.position.y = 0.35; g.add(drawer2);
+    const drawer3 = drawer1.clone(); drawer3.position.y = 0.15; g.add(drawer3);
+    [-0.7, -0.7].forEach((x, i) => { const leg = meshBox(0.07, 0.7, 0.07, c); leg.position.set(x, 0.35, i === 0 ? -0.3 : 0.3); g.add(leg); });
+    const leg2 = meshBox(0.07, 0.7, 0.07, c); leg2.position.set(-0.7, 0.35, 0.3); g.add(leg2);
+    return g;
+  }},
+  coffeeTable: { name: 'Журнальный столик', icon: '☕', price: 10000, color: 0x3a2a1f, build(c) {
+    const g = new THREE.Group();
+    const top = meshBox(1, 0.05, 0.6, c); top.position.y = 0.42; g.add(top);
+    const shelf = meshBox(0.95, 0.04, 0.55, c); shelf.position.y = 0.18; g.add(shelf);
+    [-0.42, 0.42].forEach(x => [-0.23, 0.23].forEach(z => { const leg = meshBox(0.06, 0.4, 0.06, c); leg.position.set(x, 0.2, z); g.add(leg); }));
+    return g;
+  }},
+  bookshelf: { name: 'Книжный шкаф', icon: '📚', price: 28000, color: 0x5a4030, build(c) {
+    const g = new THREE.Group();
+    const back = meshBox(1.4, 2, 0.05, c); back.position.set(0, 1, -0.18); g.add(back);
+    const sideL = meshBox(0.05, 2, 0.4, c); sideL.position.set(-0.7, 1, 0); g.add(sideL);
+    const sideR = sideL.clone(); sideR.position.x = 0.7; g.add(sideR);
+    const top = meshBox(1.4, 0.05, 0.4, c); top.position.set(0, 2, 0); g.add(top);
+    const bottom = top.clone(); bottom.position.y = 0; g.add(bottom);
+    for (let i = 1; i < 4; i++) {
+      const shelf = meshBox(1.35, 0.04, 0.38, c); shelf.position.set(0, i * 0.5, 0); g.add(shelf);
+    }
+    const bookColors = [0x8b3a3a, 0x3a5a8b, 0x6b8a4a, 0x8b6b3a, 0x4a3a6b, 0x8b8b3a];
+    for (let row = 0; row < 4; row++) {
+      let x = -0.62;
+      for (let i = 0; i < 8; i++) {
+        const w = 0.08 + Math.random() * 0.08;
+        const h = 0.3 + Math.random() * 0.12;
+        const book = meshBox(w, h, 0.2, bookColors[Math.floor(Math.random() * bookColors.length)]);
+        book.position.set(x + w / 2, row * 0.5 + h / 2 + 0.04, 0.02);
+        g.add(book);
+        x += w + 0.01;
+      }
+    }
+    return g;
+  }},
+  dresser: { name: 'Комод', icon: '🗄️', price: 26000, color: 0x6b4a2a, build(c) {
+    const g = new THREE.Group();
+    const body = meshBox(1.4, 0.85, 0.5, c); body.position.y = 0.45; g.add(body);
+    for (let i = 0; i < 3; i++) {
+      const drawer = meshBox(1.3, 0.22, 0.04, 0x8b6a4a); drawer.position.set(0, 0.18 + i * 0.27, 0.27); g.add(drawer);
+      [-0.3, 0.3].forEach(x => { const knob = meshCyl(0.04, 0.04, 0.08, 0xd4b860, 12); knob.rotation.x = Math.PI / 2; knob.position.set(x, 0.18 + i * 0.27, 0.32); g.add(knob); });
+    }
+    return g;
+  }},
+  mirror: { name: 'Зеркало', icon: '🪞', price: 9000, color: 0xd4b860, build(c) {
+    const g = new THREE.Group();
+    const frame = meshBox(0.7, 1.6, 0.05, c); frame.position.y = 0.85; g.add(frame);
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 1.5), new THREE.MeshStandardMaterial({ color: 0xc8d8e0, metalness: 0.9, roughness: 0.1 }));
+    glass.position.set(0, 0.85, 0.026); g.add(glass);
+    const stand = meshBox(0.1, 0.06, 0.3, 0x3a2a1f); stand.position.y = 0.03; g.add(stand);
+    return g;
+  }},
+  nightstand: { name: 'Тумбочка', icon: '🕯️', price: 7500, color: 0x5a4030, build(c) {
+    const g = new THREE.Group();
+    const body = meshBox(0.5, 0.55, 0.4, c); body.position.y = 0.3; g.add(body);
+    const drawer = meshBox(0.45, 0.18, 0.04, 0x7a5a40); drawer.position.set(0, 0.45, 0.21); g.add(drawer);
+    const knob = meshCyl(0.025, 0.025, 0.05, 0xd4b860, 12); knob.rotation.x = Math.PI / 2; knob.position.set(0, 0.45, 0.24); g.add(knob);
+    return g;
+  }},
+  tv: { name: 'ТВ-тумба', icon: '📺', price: 15000, color: 0x2a2520, build(c) {
+    const g = new THREE.Group();
+    const body = meshBox(1.8, 0.45, 0.4, c); body.position.y = 0.25; g.add(body);
+    const tv = meshBox(1.4, 0.8, 0.05, 0x0a0a0a); tv.position.set(0, 0.95, -0.1); g.add(tv);
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 0.7), new THREE.MeshStandardMaterial({ color: 0x4a8aa8, emissive: 0x1a4a6a, emissiveIntensity: 0.4 }));
+    screen.position.set(0, 0.95, -0.072); g.add(screen);
+    return g;
+  }},
+  ceilingLamp: { name: 'Люстра', icon: '🔆', price: 11000, color: 0xd4b860, build(c) {
+    const g = new THREE.Group();
+    const cord = meshCyl(0.02, 0.02, 1.2, 0x2a2a2a); cord.position.y = 3.4; g.add(cord);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2), mat(c, 0.4));
+    dome.position.y = 2.7; dome.castShadow = true; g.add(dome);
+    const bulb = new THREE.PointLight(0xfff0c4, 0.7, 8); bulb.position.y = 2.5; g.add(bulb);
+    const glow = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), new THREE.MeshBasicMaterial({ color: 0xfff0c4 }));
+    glow.position.y = 2.5; g.add(glow);
     return g;
   }}
 };
