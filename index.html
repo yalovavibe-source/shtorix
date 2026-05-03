@@ -1754,8 +1754,7 @@
         <div class="cart-total-row"><span>Доставка:</span><span>2 500 MTC</span></div>
         <div class="cart-total-row big"><span>🪙 Итого:</span><span id="cartSum">0 MTC</span></div>
         <div class="cart-actions">
-          <button class="order-btn" id="orderBtn">Оформить с доставкой</button>
-          <button class="pay-mtc-btn" id="payMtcBtn">🪙 Быстрая покупка</button>
+          <button class="pay-mtc-btn" id="payMtcBtn">🪙 Купить за MTC</button>
           <button class="clear-btn save-btn" id="saveBtn">📁 Сохранить в ленту</button>
           <button class="clear-btn" id="clearBtn">Очистить</button>
         </div>
@@ -4405,10 +4404,6 @@ document.getElementById('saveBtn').addEventListener('click', () => {
 
   const state = serializeRoom();
   if (window.saveToFeed) window.saveToFeed(state, thumb);
-});
-
-document.getElementById('orderBtn').addEventListener('click', () => {
-  window.openOrderModal();
 });
 
 document.getElementById('payMtcBtn').addEventListener('click', () => {
