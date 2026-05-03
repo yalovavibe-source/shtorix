@@ -3145,13 +3145,11 @@ function publishPendingUrl() {
 }
 
 async function doAddUrlToPublic(url) {
-  // Extract base64 room param from URL
   let b64;
   try {
     const u = new URL(url);
     b64 = u.searchParams.get('room');
   } catch {
-    // Not a valid URL — maybe just the b64 piece
     if (/^[A-Za-z0-9_-]+$/.test(url.trim())) b64 = url.trim();
   }
   if (!b64) {
@@ -3163,14 +3161,10 @@ async function doAddUrlToPublic(url) {
     showFeedToast('Не удалось прочитать ссылку', '⚠️');
     return;
   }
-  // Try to find matching local room to grab thumbnail
-  let thumbnail = '';
-  const local = getRooms().find(r => r.name === decoded.name && r.itemCount === decoded.itemCount);
-  if (local && local.thumbnail) thumbnail = local.thumbnail;
-
   showFeedToast('Публикуем в общую ленту...', '🌍');
   try {
-    await postPublicRoom(decoded, getNickname() || 'Аноним', thumbnail);
+    // Skip thumbnail — public API has small body limits, would 500
+    await postPublicRoom(decoded, getNickname() || 'Аноним', '');
     document.getElementById('publicAddUrl').value = '';
     showFeedToast('Опубликовано! Все увидят ваш интерьер', '🎉');
     renderPublicFeed();
