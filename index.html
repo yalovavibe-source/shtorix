@@ -1413,6 +1413,60 @@
     outline: none;
   }
   .nickname-prompt input:focus { border-color: var(--gold); }
+
+  .public-toolbar {
+    background: linear-gradient(145deg, rgba(31,77,46,0.25), rgba(22,41,30,0.5));
+    border: 1px solid rgba(212,184,96,0.2);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .public-search-box {
+    position: relative;
+  }
+  .public-search-box .search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .public-search-box input {
+    width: 100%;
+    padding: 12px 18px 12px 48px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .public-search-box input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
+  .public-add-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .public-add-row input {
+    flex: 1;
+    min-width: 200px;
+    padding: 12px 18px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.92rem;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .public-add-row input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
   .feed-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -1767,9 +1821,14 @@
 <section class="section" id="feed-section">
   <div class="section-header">
     <span class="section-tag">Лента</span>
-    <h2 class="section-title">Мои Комнаты</h2>
-    <p class="section-desc">Сохраняйте свои интерьеры, открывайте обратно в конструкторе одним кликом и делитесь с друзьями ссылкой — каждый сможет открыть вашу комнату на любом устройстве.</p>
+    <h2 class="section-title">Лента Интерьеров</h2>
+    <p class="section-desc">Сохраняйте свои интерьеры локально или выкладывайте в общую ленту — там их увидят все пользователи Shtorix.</p>
   </div>
+  <div class="feed-tabs">
+    <button class="feed-tab active" data-tab="mine">📁 Мои комнаты <span class="count" id="mineCount">0</span></button>
+    <button class="feed-tab" data-tab="public">🌍 Общая лента <span class="count" id="publicCount">·</span></button>
+  </div>
+
   <div id="myFeedContent">
     <div class="feed-empty" id="feedEmpty">
       <span class="empty-icon">🏠</span>
@@ -1777,6 +1836,34 @@
       <p style="font-size:0.9rem">Соберите интерьер в 3D-конструкторе выше и нажмите «📁 Сохранить в ленту»</p>
     </div>
     <div class="feed-grid" id="feedGrid"></div>
+  </div>
+
+  <div id="publicFeedContent" style="display:none">
+    <div class="public-toolbar">
+      <div class="public-search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="publicSearch" placeholder="Поиск по интерьерам и авторам...">
+      </div>
+      <div class="public-add-row">
+        <input type="text" id="publicAddUrl" placeholder="Вставьте сюда URL комнаты (полученный от друга или скопированный с 🔗)">
+        <button class="order-btn" id="publicAddBtn" style="padding:13px 24px">+ Выложить</button>
+      </div>
+    </div>
+    <div class="nickname-prompt" id="nicknamePrompt" style="display:none">
+      <label>👤 Ваш ник:</label>
+      <input type="text" id="nicknameInput" placeholder="Аноним" maxlength="24">
+      <button class="feed-btn load" onclick="saveNickname()" style="flex:0 0 auto">Сохранить</button>
+    </div>
+    <div class="feed-loader" id="publicLoader">
+      <div class="spin"></div>
+      <p>Загружаем общую ленту...</p>
+    </div>
+    <div class="feed-grid" id="publicFeedGrid"></div>
+    <div class="feed-empty" id="publicFeedEmpty" style="display:none">
+      <span class="empty-icon">🌍</span>
+      <p><strong>В общей ленте пока пусто</strong></p>
+      <p style="font-size:0.9rem">Стань первым: купи интерьер, скопируй ссылку 🔗 и вставь её в поле выше.</p>
+    </div>
   </div>
 </section>
 
@@ -2708,6 +2795,10 @@ MTC.init();
 
 // ===== ROOMS FEED =====
 const ROOMS_KEY = 'shtorix_rooms';
+const NICKNAME_KEY = 'shtorix_nickname';
+const USERID_KEY = 'shtorix_userid';
+const PUBLIC_API = 'https://api.restful-api.dev/objects';
+const SHTORIX_TAG = 'shtorix-room';
 
 function getRooms() {
   try { return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]'); }
@@ -2716,6 +2807,26 @@ function getRooms() {
 function saveRoomsList(rooms) {
   localStorage.setItem(ROOMS_KEY, JSON.stringify(rooms));
 }
+function getUserId() {
+  let id = localStorage.getItem(USERID_KEY);
+  if (!id) {
+    id = 'u_' + Math.random().toString(36).slice(2, 11);
+    localStorage.setItem(USERID_KEY, id);
+  }
+  return id;
+}
+function getNickname() {
+  return localStorage.getItem(NICKNAME_KEY) || '';
+}
+window.saveNickname = function() {
+  const v = document.getElementById('nicknameInput').value.trim().slice(0, 24);
+  if (!v) return;
+  localStorage.setItem(NICKNAME_KEY, v);
+  document.getElementById('nicknamePrompt').style.display = 'none';
+  if (window._pendingPublicAdd) {
+    publishPendingUrl();
+  }
+};
 
 function showFeedToast(msg, icon = '📁') {
   const toast = document.createElement('div');
@@ -2755,6 +2866,7 @@ function renderFeed() {
   const grid = document.getElementById('feedGrid');
   const empty = document.getElementById('feedEmpty');
   const rooms = getRooms();
+  document.getElementById('mineCount').textContent = rooms.length;
   if (rooms.length === 0) {
     grid.innerHTML = '';
     empty.style.display = '';
@@ -2840,11 +2952,13 @@ window.copyShareLink = async function(id) {
   const url = encodeRoomToUrl(room);
   try {
     await navigator.clipboard.writeText(url);
-    showFeedToast('Ссылка скопирована! Отправьте её другу', '🔗');
+    showFeedToast('Ссылка скопирована! Вставь её в «🌍 Общая лента» или отправь другу', '🔗');
   } catch {
-    // Fallback: prompt with the URL for manual copy
-    prompt('Скопируйте эту ссылку и отправьте другу:', url);
+    prompt('Скопируйте эту ссылку:', url);
   }
+  // Auto-fill the public-feed input for convenience
+  const inp = document.getElementById('publicAddUrl');
+  if (inp) inp.value = url;
 };
 
 // On page load — check URL for shared room
@@ -2886,6 +3000,221 @@ document.getElementById('importModal').addEventListener('click', (e) => {
 });
 
 setTimeout(checkUrlForSharedRoom, 500);
+
+// ===== Public feed via restful-api.dev =====
+async function fetchPublicRooms() {
+  try {
+    const r = await fetch(PUBLIC_API);
+    const all = await r.json();
+    return (all || [])
+      .filter(o => o.name === SHTORIX_TAG && o.data && o.data.room)
+      .map(o => ({ ...o.data.room, _publicId: o.id, _createdAt: o.createdAt }))
+      .sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+  } catch (e) {
+    return null; // null = error
+  }
+}
+
+async function postPublicRoom(roomData, authorName, thumbnail) {
+  const body = {
+    name: SHTORIX_TAG,
+    data: {
+      room: {
+        ...roomData,
+        thumbnail,
+        author: authorName,
+        authorId: getUserId(),
+        sharedAt: new Date().toISOString()
+      }
+    }
+  };
+  const r = await fetch(PUBLIC_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error('post failed: ' + r.status);
+  return r.json();
+}
+
+async function deletePublicRoom(publicId) {
+  await fetch(PUBLIC_API + '/' + publicId, { method: 'DELETE' });
+}
+
+let publicRoomsCache = [];
+let publicSearchQuery = '';
+
+async function renderPublicFeed() {
+  const loader = document.getElementById('publicLoader');
+  const grid = document.getElementById('publicFeedGrid');
+  const empty = document.getElementById('publicFeedEmpty');
+  loader.style.display = '';
+  grid.innerHTML = '';
+  empty.style.display = 'none';
+  const rooms = await fetchPublicRooms();
+  loader.style.display = 'none';
+  if (rooms === null) {
+    empty.innerHTML = '<span class="empty-icon">⚠️</span><p><strong>Не удалось загрузить</strong></p><p style="font-size:0.9rem">Проверь интернет и попробуй снова.</p>';
+    empty.style.display = '';
+    return;
+  }
+  publicRoomsCache = rooms;
+  document.getElementById('publicCount').textContent = rooms.length;
+  paintPublicGrid();
+}
+
+function paintPublicGrid() {
+  const grid = document.getElementById('publicFeedGrid');
+  const empty = document.getElementById('publicFeedEmpty');
+  const q = publicSearchQuery.toLowerCase().trim();
+  let rooms = publicRoomsCache;
+  if (q) {
+    rooms = rooms.filter(r =>
+      (r.name || '').toLowerCase().includes(q) ||
+      (r.author || '').toLowerCase().includes(q)
+    );
+  }
+  if (rooms.length === 0) {
+    grid.innerHTML = '';
+    if (publicRoomsCache.length === 0) {
+      empty.innerHTML = '<span class="empty-icon">🌍</span><p><strong>В общей ленте пока пусто</strong></p><p style="font-size:0.9rem">Стань первым: купи интерьер, скопируй ссылку 🔗 и вставь её в поле выше.</p>';
+    } else {
+      empty.innerHTML = '<span class="empty-icon">🔍</span><p><strong>Ничего не найдено</strong></p><p style="font-size:0.9rem">Попробуй другой запрос или очисти поиск.</p>';
+    }
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  const myUserId = getUserId();
+  grid.innerHTML = rooms.map(room => {
+    const date = new Date(room.sharedAt || room._createdAt || Date.now()).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+    const price = (room.totalPrice || 0).toLocaleString('ru-RU');
+    const isMine = room.authorId === myUserId;
+    const author = room.author || 'Аноним';
+    const thumb = room.thumbnail || '';
+    const deleteBtn = isMine ? `<button class="feed-btn icon delete" onclick='deletePublic("${room._publicId}")' title="Удалить">✕</button>` : '';
+    const thumbStyle = thumb ? `background-image:url('${thumb}')` : 'background:linear-gradient(135deg,#2a3a30,#1a2520);display:flex;align-items:center;justify-content:center;font-size:3rem';
+    const thumbInner = thumb ? '' : '🏠';
+    return `
+      <div class="feed-card public" data-id="${room._publicId}">
+        <div class="feed-thumb" style="${thumbStyle}" onclick='loadPublicRoom("${room._publicId}")'>${thumbInner}</div>
+        <div class="feed-body">
+          <div class="feed-author">@${author}${isMine ? ' (вы)' : ''}</div>
+          <h4>${room.name || 'Без названия'}</h4>
+          <div class="feed-meta">
+            <span>📅 ${date}</span>
+            <span class="feed-price">🪙 ${price} MTC</span>
+          </div>
+          <div class="feed-meta"><span>📦 ${room.itemCount || 0} предметов</span></div>
+          <div class="feed-actions">
+            <button class="feed-btn load" onclick='loadPublicRoom("${room._publicId}")'>↻ Загрузить себе</button>
+            ${deleteBtn}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.loadPublicRoom = function(publicId) {
+  const room = publicRoomsCache.find(r => r._publicId === publicId);
+  if (!room || !window.loadRoom) return;
+  window.loadRoom(room);
+  showFeedToast(`Загружен интерьер от @${room.author || 'Аноним'}`, '↻');
+  setTimeout(() => {
+    document.getElementById('builder-section').scrollIntoView({ behavior: 'smooth' });
+  }, 300);
+};
+
+window.deletePublic = async function(publicId) {
+  if (!confirm('Удалить эту комнату из общей ленты?')) return;
+  try {
+    await deletePublicRoom(publicId);
+    showFeedToast('Удалено из общей ленты', '✕');
+    renderPublicFeed();
+  } catch {
+    showFeedToast('Не удалось удалить', '⚠️');
+  }
+};
+
+function publishPendingUrl() {
+  const url = window._pendingPublicAdd;
+  window._pendingPublicAdd = null;
+  if (!url) return;
+  doAddUrlToPublic(url);
+}
+
+async function doAddUrlToPublic(url) {
+  // Extract base64 room param from URL
+  let b64;
+  try {
+    const u = new URL(url);
+    b64 = u.searchParams.get('room');
+  } catch {
+    // Not a valid URL — maybe just the b64 piece
+    if (/^[A-Za-z0-9_-]+$/.test(url.trim())) b64 = url.trim();
+  }
+  if (!b64) {
+    showFeedToast('Это не похоже на ссылку Shtorix', '⚠️');
+    return;
+  }
+  const decoded = decodeRoomFromUrl(b64);
+  if (!decoded) {
+    showFeedToast('Не удалось прочитать ссылку', '⚠️');
+    return;
+  }
+  // Try to find matching local room to grab thumbnail
+  let thumbnail = '';
+  const local = getRooms().find(r => r.name === decoded.name && r.itemCount === decoded.itemCount);
+  if (local && local.thumbnail) thumbnail = local.thumbnail;
+
+  showFeedToast('Публикуем в общую ленту...', '🌍');
+  try {
+    await postPublicRoom(decoded, getNickname() || 'Аноним', thumbnail);
+    document.getElementById('publicAddUrl').value = '';
+    showFeedToast('Опубликовано! Все увидят ваш интерьер', '🎉');
+    renderPublicFeed();
+  } catch (e) {
+    showFeedToast('Не удалось опубликовать. Попробуйте позже.', '⚠️');
+  }
+}
+
+document.getElementById('publicAddBtn').addEventListener('click', () => {
+  const url = document.getElementById('publicAddUrl').value.trim();
+  if (!url) {
+    showFeedToast('Вставьте ссылку на интерьер', '⚠️');
+    return;
+  }
+  if (!getNickname()) {
+    document.getElementById('nicknamePrompt').style.display = 'flex';
+    document.getElementById('nicknameInput').focus();
+    window._pendingPublicAdd = url;
+    return;
+  }
+  doAddUrlToPublic(url);
+});
+
+document.getElementById('publicSearch').addEventListener('input', (e) => {
+  publicSearchQuery = e.target.value;
+  paintPublicGrid();
+});
+
+let currentTab = 'mine';
+document.querySelectorAll('.feed-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.feed-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = btn.dataset.tab;
+    document.getElementById('myFeedContent').style.display = currentTab === 'mine' ? '' : 'none';
+    document.getElementById('publicFeedContent').style.display = currentTab === 'public' ? '' : 'none';
+    if (currentTab === 'public') renderPublicFeed();
+  });
+});
+
+// Pre-load public count in background
+fetchPublicRooms().then(rooms => {
+  if (rooms) document.getElementById('publicCount').textContent = rooms.length;
+});
 
 window.loadFromFeed = function(id) {
   const room = getRooms().find(r => r.id === id);
