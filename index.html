@@ -1467,6 +1467,112 @@
     transition: all 0.3s;
   }
   .public-add-row input:focus { border-color: var(--gold); background: rgba(0,0,0,0.5); }
+
+  /* ===== Reactions & Comments ===== */
+  .reactions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(212,184,96,0.15);
+  }
+  .react-btn {
+    padding: 7px 14px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(212,184,96,0.2);
+    border-radius: 30px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.25s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .react-btn:hover { transform: translateY(-2px); border-color: var(--gold); }
+  .react-btn.active.like {
+    background: linear-gradient(135deg, #ff6a8a, #c43a5a);
+    border-color: transparent;
+    color: white;
+  }
+  .react-btn.active.dislike {
+    background: linear-gradient(135deg, #6a6a8a, #3a3a5a);
+    border-color: transparent;
+    color: white;
+  }
+  .react-btn.active.comment {
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    border-color: transparent;
+    color: var(--bg-dark);
+  }
+  .react-btn.disabled-react {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .comments {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(212,184,96,0.15);
+  }
+  .comments-list {
+    max-height: 220px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+  }
+  .comment {
+    padding: 10px 12px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+  }
+  .comment .comment-head {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  .comment .comment-author { color: var(--gold); font-weight: 600; }
+  .comment .comment-time { opacity: 0.5; font-size: 0.75rem; }
+  .comment .comment-text {
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  .comments-empty {
+    text-align: center;
+    padding: 20px;
+    opacity: 0.5;
+    font-size: 0.85rem;
+  }
+  .comment-input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .comment-input-row input {
+    flex: 1;
+    padding: 9px 14px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.85rem;
+    outline: none;
+  }
+  .comment-input-row input:focus { border-color: var(--gold); }
+  .comment-input-row button {
+    padding: 9px 18px;
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 30px;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .comment-input-row button:hover { transform: scale(1.05); }
+  .feed-card.public .feed-body { padding-bottom: 18px; }
   .feed-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
@@ -3060,6 +3166,7 @@ async function renderPublicFeed() {
   }
   publicRoomsCache = rooms;
   document.getElementById('publicCount').textContent = rooms.length;
+  creditLikesIfAny(rooms);
   paintPublicGrid();
 }
 
@@ -3095,6 +3202,24 @@ function paintPublicGrid() {
     const deleteBtn = isMine ? `<button class="feed-btn icon delete" onclick='deletePublic("${room._publicId}")' title="Удалить">✕</button>` : '';
     const thumbStyle = thumb ? `background-image:url('${thumb}')` : 'background:linear-gradient(135deg,#2a3a30,#1a2520);display:flex;align-items:center;justify-content:center;font-size:3rem';
     const thumbInner = thumb ? '' : '🏠';
+
+    const likes = room.likes || [];
+    const dislikes = room.dislikes || [];
+    const comments = room.comments || [];
+    const myLike = likes.includes(myUserId);
+    const myDislike = dislikes.includes(myUserId);
+    const reactionDisabled = isMine ? 'disabled-react' : '';
+    const likeClass = `react-btn like ${myLike ? 'active' : ''} ${reactionDisabled}`;
+    const dislikeClass = `react-btn dislike ${myDislike ? 'active' : ''} ${reactionDisabled}`;
+    const reactionTitle = isMine ? 'title="Нельзя ставить реакции на свой интерьер"' : '';
+    const commentsHtml = comments.length === 0
+      ? '<div class="comments-empty">Пока нет комментариев. Будь первым!</div>'
+      : comments.slice().reverse().map(c => {
+          const ct = new Date(c.timestamp).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+          const txt = (c.text || '').replace(/</g, '&lt;');
+          return `<div class="comment"><div class="comment-head"><span class="comment-author">@${c.author || 'Аноним'}</span><span class="comment-time">${ct}</span></div><div class="comment-text">${txt}</div></div>`;
+        }).join('');
+
     return `
       <div class="feed-card public" data-id="${room._publicId}">
         <div class="feed-thumb" style="${thumbStyle}" onclick='loadPublicRoom("${room._publicId}")'>${thumbInner}</div>
@@ -3110,10 +3235,149 @@ function paintPublicGrid() {
             <button class="feed-btn load" onclick='loadPublicRoom("${room._publicId}")'>↻ Загрузить себе</button>
             ${deleteBtn}
           </div>
+          <div class="reactions">
+            <button class="${likeClass}" ${reactionTitle} onclick='toggleLike("${room._publicId}")'>👍 <span>${likes.length}</span></button>
+            <button class="${dislikeClass}" ${reactionTitle} onclick='toggleDislike("${room._publicId}")'>👎 <span>${dislikes.length}</span></button>
+            <button class="react-btn comment" onclick='toggleComments("${room._publicId}")'>💬 <span>${comments.length}</span></button>
+          </div>
+          <div class="comments" id="comments-${room._publicId}" style="display:none">
+            <div class="comments-list">${commentsHtml}</div>
+            <div class="comment-input-row">
+              <input type="text" id="comment-input-${room._publicId}" placeholder="Ваш комментарий..." maxlength="200" onkeydown='if(event.key==="Enter")submitComment("${room._publicId}")'>
+              <button onclick='submitComment("${room._publicId}")'>→</button>
+            </div>
+          </div>
         </div>
       </div>
     `;
   }).join('');
+}
+
+window.toggleComments = function(publicId) {
+  const el = document.getElementById('comments-' + publicId);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? '' : 'none';
+};
+
+async function fetchSingleRoom(publicId) {
+  const r = await fetch(PUBLIC_API + '/' + publicId);
+  if (!r.ok) throw new Error('fetch failed');
+  return r.json();
+}
+
+async function updateSingleRoom(publicId, room) {
+  const r = await fetch(PUBLIC_API + '/' + publicId, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: SHTORIX_TAG, data: { room } })
+  });
+  if (!r.ok) throw new Error('update failed: ' + r.status);
+  return r.json();
+}
+
+async function reactToRoom(publicId, kind) {
+  const myId = getUserId();
+  const room = publicRoomsCache.find(r => r._publicId === publicId);
+  if (!room) return;
+  if (room.authorId === myId) {
+    showFeedToast('Нельзя ставить реакции на свой интерьер', '⚠️');
+    return;
+  }
+  try {
+    const obj = await fetchSingleRoom(publicId);
+    const r = obj.data.room;
+    r.likes = r.likes || [];
+    r.dislikes = r.dislikes || [];
+    if (kind === 'like') {
+      r.dislikes = r.dislikes.filter(id => id !== myId);
+      if (r.likes.includes(myId)) r.likes = r.likes.filter(id => id !== myId);
+      else r.likes.push(myId);
+    } else {
+      r.likes = r.likes.filter(id => id !== myId);
+      if (r.dislikes.includes(myId)) r.dislikes = r.dislikes.filter(id => id !== myId);
+      else r.dislikes.push(myId);
+    }
+    // Cap arrays to keep payload small
+    if (r.likes.length > 200) r.likes = r.likes.slice(-200);
+    if (r.dislikes.length > 200) r.dislikes = r.dislikes.slice(-200);
+    await updateSingleRoom(publicId, r);
+    // Update local cache and re-paint
+    Object.assign(room, r);
+    paintPublicGrid();
+  } catch (e) {
+    showFeedToast('Не удалось сохранить реакцию', '⚠️');
+  }
+}
+
+window.toggleLike = (id) => reactToRoom(id, 'like');
+window.toggleDislike = (id) => reactToRoom(id, 'dislike');
+
+window.submitComment = async function(publicId) {
+  const inp = document.getElementById('comment-input-' + publicId);
+  if (!inp) return;
+  const text = inp.value.trim();
+  if (!text) return;
+  if (!getNickname()) {
+    document.getElementById('nicknamePrompt').style.display = 'flex';
+    document.getElementById('nicknameInput').focus();
+    showFeedToast('Введите ник, чтобы оставлять комментарии', '👤');
+    return;
+  }
+  try {
+    const obj = await fetchSingleRoom(publicId);
+    const r = obj.data.room;
+    r.comments = r.comments || [];
+    r.comments.push({
+      userId: getUserId(),
+      author: getNickname(),
+      text: text.slice(0, 200),
+      timestamp: new Date().toISOString()
+    });
+    if (r.comments.length > 30) r.comments = r.comments.slice(-30);
+    await updateSingleRoom(publicId, r);
+    inp.value = '';
+    const cached = publicRoomsCache.find(x => x._publicId === publicId);
+    if (cached) Object.assign(cached, r);
+    paintPublicGrid();
+    document.getElementById('comments-' + publicId).style.display = '';
+  } catch (e) {
+    showFeedToast('Не удалось отправить комментарий', '⚠️');
+  }
+};
+
+// Credit MTC for likes received on author's rooms
+const CREDITED_KEY = 'shtorix_credited_likes';
+function getCredited() {
+  try { return JSON.parse(localStorage.getItem(CREDITED_KEY) || '{}'); } catch { return {}; }
+}
+function setCredited(map) { localStorage.setItem(CREDITED_KEY, JSON.stringify(map)); }
+
+function creditLikesIfAny(rooms) {
+  if (!Array.isArray(rooms)) return;
+  const myId = getUserId();
+  const credited = getCredited();
+  let totalNew = 0, totalLikes = 0;
+  rooms.forEach(r => {
+    if (r.authorId !== myId) return;
+    const cur = (r.likes || []).length;
+    const old = credited[r._publicId] || 0;
+    const diff = cur - old;
+    if (diff > 0) {
+      totalNew += diff * 50000;
+      totalLikes += diff;
+      credited[r._publicId] = cur;
+    } else if (diff < 0) {
+      // Likes removed — sync down without crediting
+      credited[r._publicId] = cur;
+    }
+  });
+  if (totalNew > 0) {
+    MTC.balance = MTC.balance + totalNew;
+    setCredited(credited);
+    showFeedToast(`+${totalNew.toLocaleString('ru-RU')} MTC за ${totalLikes} лайков!`, '💖');
+  } else {
+    setCredited(credited);
+  }
 }
 
 window.loadPublicRoom = function(publicId) {
@@ -3205,9 +3469,12 @@ document.querySelectorAll('.feed-tab').forEach(btn => {
   });
 });
 
-// Pre-load public count in background
+// Pre-load public count in background + credit pending likes
 fetchPublicRooms().then(rooms => {
-  if (rooms) document.getElementById('publicCount').textContent = rooms.length;
+  if (!rooms) return;
+  document.getElementById('publicCount').textContent = rooms.length;
+  publicRoomsCache = rooms;
+  creditLikesIfAny(rooms);
 });
 
 window.loadFromFeed = function(id) {
