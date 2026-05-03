@@ -1961,7 +1961,9 @@
         <button class="filter-btn" data-pub-filter="liked">❤️ Я лайкнул</button>
         <button class="filter-btn" data-pub-filter="popular">🔥 Популярные</button>
         <button class="filter-btn" data-pub-filter="recent">🆕 Недавние</button>
+        <button class="filter-btn" id="refreshPublicBtn" style="margin-left:auto">🔄 Обновить</button>
       </div>
+      <div id="myAccountInfo" style="font-size:0.85rem;opacity:0.7">Вы публикуетесь как: <strong id="myNickDisplay" style="color:var(--gold)">не указан ник</strong></div>
       <div class="public-add-row">
         <input type="text" id="publicAddUrl" placeholder="Вставьте сюда URL комнаты (полученный от друга или скопированный с 🔗)">
         <button class="order-btn" id="publicAddBtn" style="padding:13px 24px">+ Выложить</button>
@@ -3192,7 +3194,8 @@ function paintPublicGrid() {
 
   // Apply chip filter
   if (publicFilter === 'mine') {
-    rooms = rooms.filter(r => r.authorId === myId);
+    const myNick = getNickname().toLowerCase();
+    rooms = rooms.filter(r => r.authorId === myId || (myNick && (r.author || '').toLowerCase() === myNick));
   } else if (publicFilter === 'liked') {
     rooms = rooms.filter(r => (r.likes || []).includes(myId));
   } else if (publicFilter === 'popular') {
@@ -3221,10 +3224,11 @@ function paintPublicGrid() {
   }
   empty.style.display = 'none';
   const myUserId = myId;
+  const myNick = getNickname().toLowerCase();
   grid.innerHTML = rooms.map(room => {
     const date = new Date(room.sharedAt || room._createdAt || Date.now()).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
     const price = (room.totalPrice || 0).toLocaleString('ru-RU');
-    const isMine = room.authorId === myUserId;
+    const isMine = room.authorId === myUserId || (myNick && (room.author || '').toLowerCase() === myNick);
     const author = room.author || 'Аноним';
     const thumb = room.thumbnail || '';
     const deleteBtn = isMine ? `<button class="feed-btn icon delete" onclick='deletePublic("${room._publicId}")' title="Удалить">✕</button>` : '';
@@ -3493,6 +3497,24 @@ document.querySelectorAll('[data-pub-filter]').forEach(btn => {
     paintPublicGrid();
   });
 });
+
+document.getElementById('refreshPublicBtn').addEventListener('click', () => {
+  showFeedToast('Обновляем ленту...', '🔄');
+  renderPublicFeed();
+});
+
+function updateMyNickDisplay() {
+  const nick = getNickname();
+  const el = document.getElementById('myNickDisplay');
+  if (!el) return;
+  el.textContent = nick ? '@' + nick : 'не указан ник (укажите при публикации)';
+}
+updateMyNickDisplay();
+const _origSaveNickname = window.saveNickname;
+window.saveNickname = function() {
+  _origSaveNickname && _origSaveNickname();
+  updateMyNickDisplay();
+};
 
 let currentTab = 'mine';
 document.querySelectorAll('.feed-tab').forEach(btn => {
