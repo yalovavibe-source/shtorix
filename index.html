@@ -715,6 +715,292 @@
   }
   footer p { opacity: 0.6; font-size: 0.9rem; letter-spacing: 1px; }
 
+  /* ===== 3D BUILDER ===== */
+  .builder {
+    background: linear-gradient(145deg, rgba(31,77,46,0.3), rgba(22,41,30,0.6));
+    border: 1px solid rgba(212,184,96,0.25);
+    border-radius: 24px;
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 260px 1fr 280px;
+    min-height: 600px;
+  }
+  .builder-sidebar {
+    padding: 25px;
+    background: rgba(0,0,0,0.3);
+    border-right: 1px solid rgba(212,184,96,0.2);
+    overflow-y: auto;
+    max-height: 700px;
+  }
+  .builder-sidebar h4 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+  }
+  .item-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: rgba(31,77,46,0.4);
+    border: 1px solid rgba(212,184,96,0.2);
+    border-radius: 12px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.95rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .item-btn:hover {
+    background: rgba(212,184,96,0.2);
+    border-color: var(--gold);
+    transform: translateX(4px);
+  }
+  .item-btn .ico { font-size: 1.4rem; }
+  .item-btn .price {
+    margin-left: auto;
+    color: var(--gold);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .builder-canvas {
+    position: relative;
+    background: #1a2520;
+    overflow: hidden;
+  }
+  .builder-canvas canvas { display: block; width: 100%; height: 100%; }
+  .canvas-tip {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(10px);
+    color: var(--cream);
+    padding: 8px 18px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    pointer-events: none;
+    border: 1px solid rgba(212,184,96,0.3);
+  }
+  .toolbar {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(15px);
+    padding: 10px 14px;
+    border-radius: 50px;
+    border: 1px solid rgba(212,184,96,0.3);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+  .toolbar.visible { opacity: 1; pointer-events: auto; }
+  .tool-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(212,184,96,0.3);
+    background: rgba(31,77,46,0.5);
+    color: var(--cream);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tool-btn:hover {
+    background: var(--gold);
+    color: var(--bg-dark);
+    transform: scale(1.1);
+  }
+  .tool-color {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(212,184,96,0.4);
+    cursor: pointer;
+    padding: 0;
+    background: transparent;
+    overflow: hidden;
+  }
+  .tool-color::-webkit-color-swatch-wrapper { padding: 0; }
+  .tool-color::-webkit-color-swatch { border: none; }
+  .builder-cart {
+    padding: 25px;
+    background: rgba(0,0,0,0.3);
+    border-left: 1px solid rgba(212,184,96,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    max-height: 700px;
+  }
+  .builder-cart h4 {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+  }
+  .cart-list {
+    flex: 1;
+    list-style: none;
+    margin-bottom: 15px;
+  }
+  .cart-list li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(212,184,96,0.1);
+    font-size: 0.9rem;
+  }
+  .cart-list li .ico { font-size: 1.2rem; }
+  .cart-list li .price { margin-left: auto; color: var(--gold); font-size: 0.85rem; }
+  .cart-list li.selected {
+    background: rgba(212,184,96,0.1);
+    border-radius: 8px;
+    padding-left: 8px;
+  }
+  .cart-empty {
+    text-align: center;
+    opacity: 0.5;
+    font-size: 0.9rem;
+    padding: 40px 0;
+    flex: 1;
+  }
+  .cart-total {
+    padding: 15px 0;
+    border-top: 1px solid rgba(212,184,96,0.3);
+    margin-top: auto;
+  }
+  .cart-total-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+  }
+  .cart-total-row.big {
+    font-size: 1.3rem;
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    margin-top: 8px;
+  }
+  .cart-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  .order-btn {
+    padding: 14px;
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    border: none;
+    border-radius: 30px;
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .order-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(212,184,96,0.5);
+  }
+  .order-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .clear-btn {
+    padding: 10px;
+    background: transparent;
+    color: var(--cream);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+  }
+  .clear-btn:hover { background: rgba(255,80,80,0.2); border-color: #ff5050; color: #ff8080; }
+
+  @media (max-width: 1000px) {
+    .builder { grid-template-columns: 1fr; }
+    .builder-sidebar, .builder-cart { max-height: 350px; }
+    .builder-canvas { min-height: 400px; }
+  }
+
+  /* Order modal form */
+  .form-grid {
+    display: grid;
+    gap: 15px;
+    margin: 20px 0;
+  }
+  .form-grid input, .form-grid textarea {
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 12px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s;
+  }
+  .form-grid input:focus, .form-grid textarea:focus {
+    border-color: var(--gold);
+    background: rgba(255,255,255,0.1);
+  }
+  .form-grid textarea { resize: vertical; min-height: 80px; }
+  .order-summary {
+    background: rgba(212,184,96,0.1);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  .order-summary ul { list-style: none; margin: 10px 0; }
+  .order-summary li {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.9rem;
+  }
+  .order-success {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .order-success .check {
+    font-size: 4rem;
+    color: var(--green-bright);
+    margin-bottom: 15px;
+    animation: pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes pop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+
   @media (max-width: 600px) {
     .modal-body { padding: 25px; }
     .modal-hero { height: 220px; }
@@ -771,6 +1057,56 @@
     <button class="filter-btn" data-filter="decor">Декор</button>
   </div>
   <div class="croc-grid" id="crocGrid"></div>
+</section>
+
+<!-- 3D BUILDER -->
+<section class="section" id="builder-section">
+  <div class="section-header">
+    <span class="section-tag">3D-Конструктор</span>
+    <h2 class="section-title">Соберите Свой Интерьер</h2>
+    <p class="section-desc">Расставьте мебель в виртуальной комнате, поверните и перекрасьте каждый предмет, посчитайте цену и оформите заказ — всё в одном окне.</p>
+  </div>
+  <div class="builder">
+    <aside class="builder-sidebar">
+      <h4>Каталог</h4>
+      <button class="item-btn" data-add="sofa"><span class="ico">🛋️</span>Диван<span class="price">45 000 ₽</span></button>
+      <button class="item-btn" data-add="armchair"><span class="ico">💺</span>Кресло<span class="price">18 000 ₽</span></button>
+      <button class="item-btn" data-add="table"><span class="ico">🍽️</span>Стол<span class="price">25 000 ₽</span></button>
+      <button class="item-btn" data-add="chair"><span class="ico">🪑</span>Стул<span class="price">6 000 ₽</span></button>
+      <button class="item-btn" data-add="wardrobe"><span class="ico">🚪</span>Шкаф<span class="price">35 000 ₽</span></button>
+      <button class="item-btn" data-add="bed"><span class="ico">🛏️</span>Кровать<span class="price">40 000 ₽</span></button>
+      <button class="item-btn" data-add="carpet"><span class="ico">🟫</span>Ковёр<span class="price">12 000 ₽</span></button>
+      <button class="item-btn" data-add="lamp"><span class="ico">💡</span>Торшер<span class="price">8 000 ₽</span></button>
+      <button class="item-btn" data-add="plant"><span class="ico">🪴</span>Растение<span class="price">4 500 ₽</span></button>
+      <h4 style="margin-top:25px">Стены</h4>
+      <input type="color" id="wallColor" value="#d8c9a8" style="width:100%;height:40px;border-radius:10px;border:1px solid rgba(212,184,96,0.3);background:transparent;cursor:pointer">
+      <h4 style="margin-top:20px">Пол</h4>
+      <input type="color" id="floorColor" value="#8b6f4e" style="width:100%;height:40px;border-radius:10px;border:1px solid rgba(212,184,96,0.3);background:transparent;cursor:pointer">
+    </aside>
+    <div class="builder-canvas" id="canvasWrap">
+      <div class="canvas-tip">Клик — выбрать · Зажми и тяни — двигать · ПКМ — крутить камеру · Колесо — приблизить</div>
+      <div class="toolbar" id="toolbar">
+        <input type="color" class="tool-color" id="itemColor" title="Цвет">
+        <button class="tool-btn" id="rotateBtn" title="Повернуть">↻</button>
+        <button class="tool-btn" id="duplicateBtn" title="Дублировать">⎘</button>
+        <button class="tool-btn" id="deleteBtn" title="Удалить" style="background:rgba(255,80,80,0.3);border-color:#ff5050">✕</button>
+      </div>
+    </div>
+    <aside class="builder-cart">
+      <h4>🛒 Ваш заказ</h4>
+      <ul class="cart-list" id="cartList"></ul>
+      <div class="cart-empty" id="cartEmpty">Добавьте мебель из каталога →</div>
+      <div class="cart-total" id="cartTotal" style="display:none">
+        <div class="cart-total-row"><span>Позиций:</span><span id="cartCount">0</span></div>
+        <div class="cart-total-row"><span>Доставка:</span><span>2 500 ₽</span></div>
+        <div class="cart-total-row big"><span>Итого:</span><span id="cartSum">0 ₽</span></div>
+        <div class="cart-actions">
+          <button class="order-btn" id="orderBtn">Оформить заказ</button>
+          <button class="clear-btn" id="clearBtn">Очистить</button>
+        </div>
+      </div>
+    </aside>
+  </div>
 </section>
 
 <!-- FEATURES -->
@@ -839,6 +1175,40 @@
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">×</button>
   <img id="lightboxImg" src="" alt="">
+</div>
+
+<!-- ORDER MODAL -->
+<div class="modal" id="orderModal">
+  <div class="modal-content" style="max-width:600px">
+    <div class="modal-body">
+      <button class="close-btn" onclick="closeOrderModal()" style="position:absolute;top:20px;right:20px">×</button>
+      <div id="orderFormView">
+        <h2>Оформление заказа</h2>
+        <p class="latin-name">Заполните контакты — менеджер свяжется в течение 30 минут</p>
+        <div class="order-summary">
+          <strong style="color:var(--gold)">Ваш интерьер:</strong>
+          <ul id="orderSummaryList"></ul>
+          <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(212,184,96,0.3);font-family:'Cinzel',serif;color:var(--gold)">
+            <span>К оплате:</span><span id="orderTotal">0 ₽</span>
+          </div>
+        </div>
+        <form class="form-grid" id="orderForm" onsubmit="submitOrder(event)">
+          <input type="text" name="name" placeholder="Ваше имя" required>
+          <input type="tel" name="phone" placeholder="Телефон (+7...)" required>
+          <input type="text" name="address" placeholder="Адрес доставки" required>
+          <textarea name="comment" placeholder="Комментарий к заказу (необязательно)"></textarea>
+          <button type="submit" class="order-btn">Подтвердить заказ</button>
+        </form>
+      </div>
+      <div class="order-success" id="orderSuccessView" style="display:none">
+        <div class="check">✓</div>
+        <h2>Заказ принят!</h2>
+        <p style="margin-top:10px;opacity:0.8">Номер заказа: <strong id="orderNumber" style="color:var(--gold)"></strong></p>
+        <p style="margin-top:15px;opacity:0.8">Менеджер свяжется с вами в ближайшее время для подтверждения деталей.</p>
+        <button class="order-btn" style="margin-top:30px" onclick="closeOrderModal()">Готово</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Наверх">↑</button>
@@ -1122,9 +1492,434 @@ function attachRipple(selector) {
     setTimeout(() => ripple.remove(), 600);
   });
 }
-attachRipple('.btn, .filter-btn, .back-to-top');
+attachRipple('.btn, .filter-btn, .back-to-top, .item-btn, .tool-btn, .order-btn, .clear-btn');
 
 renderCrocodiles(crocodiles);
+
+// ===== ORDER MODAL =====
+function openOrderModal() {
+  const list = document.getElementById('orderSummaryList');
+  const items = window.getCartItems ? window.getCartItems() : [];
+  if (items.length === 0) return;
+  list.innerHTML = items.map(i => `<li><span>${i.icon} ${i.name}</span><span>${i.price.toLocaleString('ru-RU')} ₽</span></li>`).join('') +
+    `<li><span>Доставка</span><span>2 500 ₽</span></li>`;
+  document.getElementById('orderTotal').textContent = (items.reduce((s, i) => s + i.price, 0) + 2500).toLocaleString('ru-RU') + ' ₽';
+  document.getElementById('orderFormView').style.display = '';
+  document.getElementById('orderSuccessView').style.display = 'none';
+  document.getElementById('orderModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeOrderModal() {
+  document.getElementById('orderModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+function submitOrder(e) {
+  e.preventDefault();
+  const num = '#' + Math.floor(100000 + Math.random() * 900000);
+  document.getElementById('orderNumber').textContent = num;
+  document.getElementById('orderFormView').style.display = 'none';
+  document.getElementById('orderSuccessView').style.display = '';
+  if (window.clearCart) window.clearCart();
+}
+document.getElementById('orderModal').addEventListener('click', (e) => {
+  if (e.target.id === 'orderModal') closeOrderModal();
+});
+</script>
+
+<!-- ===== 3D BUILDER ===== -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const wrap = document.getElementById('canvasWrap');
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x1a2520);
+scene.fog = new THREE.Fog(0x1a2520, 15, 35);
+
+const camera = new THREE.PerspectiveCamera(50, wrap.clientWidth / wrap.clientHeight, 0.1, 100);
+camera.position.set(7, 6, 9);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+wrap.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI / 2.1;
+controls.minDistance = 4;
+controls.maxDistance = 20;
+controls.target.set(0, 1, 0);
+controls.mouseButtons = { LEFT: null, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+controls.touches = { ONE: null, TWO: THREE.TOUCH.DOLLY_ROTATE };
+
+// Lighting
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const sun = new THREE.DirectionalLight(0xffe8c4, 0.9);
+sun.position.set(8, 12, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+sun.shadow.camera.left = -10;
+sun.shadow.camera.right = 10;
+sun.shadow.camera.top = 10;
+sun.shadow.camera.bottom = -10;
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xa0c4ff, 0.3);
+fill.position.set(-5, 5, -5);
+scene.add(fill);
+
+// Room
+const ROOM = 10;
+const floorMat = new THREE.MeshStandardMaterial({ color: 0x8b6f4e, roughness: 0.85 });
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, ROOM), floorMat);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const wallMat = new THREE.MeshStandardMaterial({ color: 0xd8c9a8, roughness: 0.95 });
+const backWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, 5), wallMat);
+backWall.position.set(0, 2.5, -ROOM / 2);
+backWall.receiveShadow = true;
+scene.add(backWall);
+const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(ROOM, 5), wallMat);
+leftWall.rotation.y = Math.PI / 2;
+leftWall.position.set(-ROOM / 2, 2.5, 0);
+leftWall.receiveShadow = true;
+scene.add(leftWall);
+
+// Grid
+const grid = new THREE.GridHelper(ROOM, 20, 0x445544, 0x2a3a30);
+grid.position.y = 0.001;
+scene.add(grid);
+
+// Selection ring
+const ringGeo = new THREE.RingGeometry(0.5, 0.6, 64);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0xd4b860, side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
+const selectionRing = new THREE.Mesh(ringGeo, ringMat);
+selectionRing.rotation.x = -Math.PI / 2;
+selectionRing.visible = false;
+scene.add(selectionRing);
+
+// ============ Furniture factory ============
+function mat(c, r = 0.6) { return new THREE.MeshStandardMaterial({ color: c, roughness: r }); }
+function meshBox(w, h, d, c, r) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(c, r));
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function meshCyl(rt, rb, h, c, seg = 16) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg), mat(c, 0.55));
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+
+const FURNITURE = {
+  sofa: { name: 'Диван', icon: '🛋️', price: 45000, color: 0x6b8a72, build(c) {
+    const g = new THREE.Group();
+    const base = meshBox(2.4, 0.5, 1, c); base.position.y = 0.4; g.add(base);
+    const seat = meshBox(2.3, 0.3, 0.95, c); seat.position.y = 0.78; g.add(seat);
+    const back = meshBox(2.4, 0.9, 0.25, c); back.position.set(0, 1.1, -0.4); g.add(back);
+    const armL = meshBox(0.25, 0.7, 1, c); armL.position.set(-1.07, 1, 0); g.add(armL);
+    const armR = armL.clone(); armR.position.x = 1.07; g.add(armR);
+    [-0.95, 0.95].forEach(x => [-0.4, 0.4].forEach(z => { const l = meshBox(0.1, 0.15, 0.1, 0x3a2a1f); l.position.set(x, 0.075, z); g.add(l); }));
+    return g;
+  }},
+  armchair: { name: 'Кресло', icon: '💺', price: 18000, color: 0x9c6b4a, build(c) {
+    const g = new THREE.Group();
+    const base = meshBox(1, 0.45, 1, c); base.position.y = 0.4; g.add(base);
+    const seat = meshBox(0.95, 0.28, 0.95, c); seat.position.y = 0.76; g.add(seat);
+    const back = meshBox(1, 0.95, 0.22, c); back.position.set(0, 1.1, -0.4); g.add(back);
+    const armL = meshBox(0.18, 0.6, 1, c); armL.position.set(-0.41, 0.95, 0); g.add(armL);
+    const armR = armL.clone(); armR.position.x = 0.41; g.add(armR);
+    return g;
+  }},
+  table: { name: 'Стол', icon: '🍽️', price: 25000, color: 0x6b4a2a, build(c) {
+    const g = new THREE.Group();
+    const top = meshBox(2, 0.08, 1, c); top.position.y = 0.96; g.add(top);
+    [-0.85, 0.85].forEach(x => [-0.4, 0.4].forEach(z => { const leg = meshBox(0.12, 0.92, 0.12, c); leg.position.set(x, 0.46, z); g.add(leg); }));
+    return g;
+  }},
+  chair: { name: 'Стул', icon: '🪑', price: 6000, color: 0x4a3525, build(c) {
+    const g = new THREE.Group();
+    const seat = meshBox(0.5, 0.07, 0.5, c); seat.position.y = 0.5; g.add(seat);
+    const back = meshBox(0.5, 0.85, 0.07, c); back.position.set(0, 0.93, -0.21); g.add(back);
+    [-0.21, 0.21].forEach(x => [-0.21, 0.21].forEach(z => { const leg = meshBox(0.06, 0.5, 0.06, c); leg.position.set(x, 0.25, z); g.add(leg); }));
+    return g;
+  }},
+  wardrobe: { name: 'Шкаф', icon: '🚪', price: 35000, color: 0x5a4030, build(c) {
+    const g = new THREE.Group();
+    const body = meshBox(2, 2.4, 0.6, c); body.position.y = 1.2; g.add(body);
+    const door = meshBox(0.95, 2.2, 0.05, 0x6e5040); door.position.set(-0.5, 1.2, 0.32); g.add(door);
+    const door2 = door.clone(); door2.position.x = 0.5; g.add(door2);
+    [-0.5, 0.5].forEach(x => { const h = meshCyl(0.04, 0.04, 0.15, 0xd4b860, 12); h.rotation.z = Math.PI / 2; h.position.set(x + (x > 0 ? -0.3 : 0.3), 1.2, 0.36); g.add(h); });
+    return g;
+  }},
+  bed: { name: 'Кровать', icon: '🛏️', price: 40000, color: 0x8a7a8a, build(c) {
+    const g = new THREE.Group();
+    const frame = meshBox(2.2, 0.3, 2.6, 0x3a2a20); frame.position.y = 0.2; g.add(frame);
+    const mattress = meshBox(2, 0.3, 2.4, 0xf5f1e8, 0.8); mattress.position.y = 0.5; g.add(mattress);
+    const headboard = meshBox(2.2, 1.1, 0.15, c); headboard.position.set(0, 0.85, -1.3); g.add(headboard);
+    const pillow1 = meshBox(0.7, 0.18, 0.4, 0xeeeeee, 0.9); pillow1.position.set(-0.45, 0.74, -0.95); g.add(pillow1);
+    const pillow2 = pillow1.clone(); pillow2.position.x = 0.45; g.add(pillow2);
+    return g;
+  }},
+  carpet: { name: 'Ковёр', icon: '🟫', price: 12000, color: 0x9c4a4a, build(c) {
+    const g = new THREE.Group();
+    const r = meshBox(2.6, 0.04, 1.8, c, 0.95); r.position.y = 0.02; g.add(r);
+    return g;
+  }},
+  lamp: { name: 'Торшер', icon: '💡', price: 8000, color: 0xefe5c4, build(c) {
+    const g = new THREE.Group();
+    const baseDisc = meshCyl(0.25, 0.25, 0.05, 0x2a2a2a); baseDisc.position.y = 0.025; g.add(baseDisc);
+    const pole = meshCyl(0.03, 0.03, 1.5, 0x2a2a2a); pole.position.y = 0.8; g.add(pole);
+    const shade = meshCyl(0.35, 0.22, 0.45, c); shade.position.y = 1.75; g.add(shade);
+    const bulb = new THREE.PointLight(0xffe2a8, 0.6, 5); bulb.position.y = 1.7; g.add(bulb);
+    return g;
+  }},
+  plant: { name: 'Растение', icon: '🪴', price: 4500, color: 0x3a6a3a, build(c) {
+    const g = new THREE.Group();
+    const pot = meshCyl(0.3, 0.22, 0.4, 0x6b3a25); pot.position.y = 0.2; g.add(pot);
+    for (let i = 0; i < 5; i++) {
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.35, 12, 8), mat(c, 0.85));
+      leaf.position.set((Math.random() - 0.5) * 0.4, 0.6 + Math.random() * 0.5, (Math.random() - 0.5) * 0.4);
+      leaf.scale.set(1, 1.4, 1);
+      leaf.castShadow = true;
+      g.add(leaf);
+    }
+    return g;
+  }}
+};
+
+// ============ State ============
+const placed = []; // { id, type, group, color, name, icon, price }
+let nextId = 1;
+let selected = null;
+let isDragging = false;
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const dragPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+const dragOffset = new THREE.Vector3();
+
+function addItem(type) {
+  const def = FURNITURE[type];
+  const group = def.build(def.color);
+  group.position.set((Math.random() - 0.5) * 4, 0, (Math.random() - 0.5) * 4);
+  group.userData = { type };
+  scene.add(group);
+  const item = { id: nextId++, type, group, color: def.color, name: def.name, icon: def.icon, price: def.price };
+  placed.push(item);
+  selectItem(item);
+  updateCart();
+}
+
+function selectItem(item) {
+  selected = item;
+  if (item) {
+    selectionRing.visible = true;
+    const box = new THREE.Box3().setFromObject(item.group);
+    const size = box.getSize(new THREE.Vector3());
+    const radius = Math.max(size.x, size.z) * 0.7;
+    selectionRing.scale.set(radius, radius, 1);
+    selectionRing.position.set(item.group.position.x, 0.02, item.group.position.z);
+    document.getElementById('toolbar').classList.add('visible');
+    const hex = '#' + new THREE.Color(item.color).getHexString();
+    document.getElementById('itemColor').value = hex;
+  } else {
+    selectionRing.visible = false;
+    document.getElementById('toolbar').classList.remove('visible');
+  }
+  updateCart();
+}
+
+function removeItem(item) {
+  scene.remove(item.group);
+  item.group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+  const idx = placed.indexOf(item);
+  if (idx >= 0) placed.splice(idx, 1);
+  if (selected === item) selectItem(null);
+  updateCart();
+}
+
+function setItemColor(item, hexStr) {
+  const col = new THREE.Color(hexStr);
+  item.color = col.getHex();
+  item.group.traverse(o => {
+    if (o.isMesh && o.material && o.material.color && !o.userData.skipColor) {
+      const baseHex = o.material.color.getHex();
+      // Only colorize meshes that match the original tone (skip black legs, white pillows etc.)
+      if (Math.abs(baseHex - FURNITURE[item.type].color) < 0x101010) {
+        o.material.color.copy(col);
+      }
+    }
+  });
+}
+
+// ============ Interaction ============
+function getPointer(e) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const t = e.touches ? e.touches[0] : e;
+  mouse.x = ((t.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((t.clientY - rect.top) / rect.height) * 2 + 1;
+}
+
+function pickItem() {
+  raycaster.setFromCamera(mouse, camera);
+  const intersects = raycaster.intersectObjects(placed.map(p => p.group), true);
+  if (intersects.length > 0) {
+    let obj = intersects[0].object;
+    while (obj.parent && !placed.find(p => p.group === obj)) obj = obj.parent;
+    return placed.find(p => p.group === obj);
+  }
+  return null;
+}
+
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return;
+  getPointer(e);
+  const item = pickItem();
+  if (item) {
+    selectItem(item);
+    isDragging = true;
+    controls.enabled = false;
+    raycaster.setFromCamera(mouse, camera);
+    const hit = new THREE.Vector3();
+    raycaster.ray.intersectPlane(dragPlane, hit);
+    dragOffset.copy(hit).sub(item.group.position);
+  } else if (selected) {
+    selectItem(null);
+  }
+});
+
+renderer.domElement.addEventListener('pointermove', (e) => {
+  if (!isDragging || !selected) return;
+  getPointer(e);
+  raycaster.setFromCamera(mouse, camera);
+  const hit = new THREE.Vector3();
+  raycaster.ray.intersectPlane(dragPlane, hit);
+  hit.sub(dragOffset);
+  hit.x = Math.max(-ROOM / 2 + 0.5, Math.min(ROOM / 2 - 0.5, hit.x));
+  hit.z = Math.max(-ROOM / 2 + 0.5, Math.min(ROOM / 2 - 0.5, hit.z));
+  selected.group.position.x = hit.x;
+  selected.group.position.z = hit.z;
+  selectionRing.position.set(hit.x, 0.02, hit.z);
+});
+
+window.addEventListener('pointerup', () => {
+  isDragging = false;
+  controls.enabled = true;
+});
+
+// ============ UI Buttons ============
+document.querySelectorAll('.item-btn[data-add]').forEach(btn => {
+  btn.addEventListener('click', () => addItem(btn.dataset.add));
+});
+
+document.getElementById('rotateBtn').addEventListener('click', () => {
+  if (selected) selected.group.rotation.y += Math.PI / 4;
+});
+
+document.getElementById('duplicateBtn').addEventListener('click', () => {
+  if (!selected) return;
+  addItem(selected.type);
+  setItemColor(placed[placed.length - 1], '#' + new THREE.Color(selected.color).getHexString());
+});
+
+document.getElementById('deleteBtn').addEventListener('click', () => {
+  if (selected) removeItem(selected);
+});
+
+document.getElementById('itemColor').addEventListener('input', (e) => {
+  if (selected) setItemColor(selected, e.target.value);
+});
+
+document.getElementById('wallColor').addEventListener('input', (e) => {
+  wallMat.color.set(e.target.value);
+});
+document.getElementById('floorColor').addEventListener('input', (e) => {
+  floorMat.color.set(e.target.value);
+});
+
+// ============ Cart ============
+function updateCart() {
+  const list = document.getElementById('cartList');
+  const empty = document.getElementById('cartEmpty');
+  const total = document.getElementById('cartTotal');
+  if (placed.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = '';
+    total.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  total.style.display = '';
+  list.innerHTML = placed.map(p =>
+    `<li class="${selected === p ? 'selected' : ''}" data-id="${p.id}"><span class="ico">${p.icon}</span>${p.name}<span class="price">${p.price.toLocaleString('ru-RU')} ₽</span></li>`
+  ).join('');
+  list.querySelectorAll('li').forEach(li => {
+    li.addEventListener('click', () => {
+      const item = placed.find(p => p.id == li.dataset.id);
+      if (item) selectItem(item);
+    });
+  });
+  document.getElementById('cartCount').textContent = placed.length;
+  const sum = placed.reduce((s, p) => s + p.price, 0) + 2500;
+  document.getElementById('cartSum').textContent = sum.toLocaleString('ru-RU') + ' ₽';
+}
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if (!confirm('Очистить интерьер?')) return;
+  while (placed.length) removeItem(placed[0]);
+});
+
+document.getElementById('orderBtn').addEventListener('click', () => {
+  window.openOrderModal();
+});
+
+window.getCartItems = () => placed.map(p => ({ name: p.name, icon: p.icon, price: p.price }));
+window.clearCart = () => { while (placed.length) removeItem(placed[0]); };
+window.openOrderModal = openOrderModal;
+
+// ============ Resize & loop ============
+function resize() {
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+window.addEventListener('resize', resize);
+new ResizeObserver(resize).observe(wrap);
+
+function tick() {
+  requestAnimationFrame(tick);
+  controls.update();
+  renderer.render(scene, camera);
+}
+tick();
+
+// Add a couple of starter items so the room isn't empty
+addItem('sofa');
+placed[0].group.position.set(-2, 0, -2);
+selectionRing.position.set(-2, 0.02, -2);
+addItem('table');
+placed[1].group.position.set(1, 0, 0);
+addItem('plant');
+placed[2].group.position.set(3, 0, -3);
+selectItem(null);
+updateCart();
 </script>
 
 </body>
