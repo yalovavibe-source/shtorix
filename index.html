@@ -2243,7 +2243,7 @@
   <div class="section-header">
     <span class="section-tag" data-i18n="ai.tag">AI-Дизайнер</span>
     <h2 class="section-title" data-i18n="ai.title">Сгенерируйте Интерьер Мечты</h2>
-    <p class="section-desc" data-i18n="ai.desc">Опишите комнату своими словами — нейросеть нарисует фотореалистичное изображение интерьера за несколько секунд. Можно использовать готовые пресеты или писать собственный запрос.</p>
+    <p class="section-desc" data-i18n="ai.desc">Опишите комнату своими словами — сайт мгновенно соберёт её в 3D из реальной мебели каталога. Готовую комнату можно купить за MTC или открыть в конструкторе для тонкой настройки.</p>
   </div>
   <div class="ai-generator">
     <div class="ai-input-wrap">
@@ -2292,7 +2292,7 @@
       <img id="aiImage" style="display:none" alt="Generated interior">
       <div class="ai-result-actions" id="aiResultActions" style="display:none">
         <button class="btn-secondary" id="aiRegenBtn" data-i18n="ai.again">↻ Заново</button>
-        <button class="btn-action" id="aiDownloadBtn" data-i18n="ai.download">⬇ Скачать</button>
+        <button class="btn-action" id="aiDownloadBtn" data-i18n="ai.buy">🪙 Купить эту комнату</button>
       </div>
     </div>
   </div>
@@ -3018,55 +3018,184 @@ function attachRipple(selector) {
 }
 attachRipple('.btn, .filter-btn, .back-to-top, .item-btn, .tool-btn, .order-btn, .clear-btn, .preset-btn');
 
-// ===== AI GENERATOR (Pollinations) =====
+// ===== AI 3D ROOM GENERATOR =====
 const aiPrompt = document.getElementById('aiPrompt');
 const aiImage = document.getElementById('aiImage');
 const aiEmpty = document.getElementById('aiEmpty');
 const aiLoading = document.getElementById('aiLoading');
 const aiActions = document.getElementById('aiResultActions');
-let lastSeed = null;
-let lastPrompt = '';
+let lastGeneratedRoom = null;
 
-function buildPrompt(userText) {
-  const enrich = ', interior design photography, photorealistic, 8k, professional architectural photo, natural lighting, magazine quality, high detail, beautiful composition, no people';
-  return userText.trim() + enrich;
+const ROOM_TEMPLATES = {
+  living: { items: [
+    { type: 'sofa',         x: 0,    z: -3,   rotY: 0 },
+    { type: 'coffeeTable',  x: 0,    z: -1.2, rotY: 0 },
+    { type: 'tvWall',       x: 0,    z: -4.85, rotY: 0 },
+    { type: 'tv',           x: 0,    z: -4.5, rotY: 0 },
+    { type: 'plant',        x: -3.5, z: -4,   rotY: 0 },
+    { type: 'lamp',         x: 2.8,  z: -3.5, rotY: 0 },
+    { type: 'carpet',       x: 0,    z: -2,   rotY: 0 },
+    { type: 'armchair',     x: 3,    z: -1.5, rotY: -1.2 }
+  ]},
+  bedroom: { items: [
+    { type: 'bed',         x: 0,    z: -2.5, rotY: 0 },
+    { type: 'nightstand',  x: -1.6, z: -3.6, rotY: 0 },
+    { type: 'nightstand',  x: 1.6,  z: -3.6, rotY: 0 },
+    { type: 'wardrobe',    x: -3.7, z: 0,    rotY: Math.PI / 2 },
+    { type: 'dresser',     x: 3.5,  z: 0.5,  rotY: -Math.PI / 2 },
+    { type: 'carpet',      x: 0,    z: -1,   rotY: 0 },
+    { type: 'lamp',        x: -1.6, z: -3.6, rotY: 0 }
+  ]},
+  kitchen: { items: [
+    { type: 'kitchenIsland', x: 0,    z: -1.5, rotY: 0 },
+    { type: 'fridge',        x: -3.5, z: -4.4, rotY: 0 },
+    { type: 'stove',         x: -2,   z: -4.6, rotY: 0 },
+    { type: 'kitchenSink',   x: 0,    z: -4.6, rotY: 0 },
+    { type: 'microwave',     x: 1.5,  z: -4.7, rotY: 0 },
+    { type: 'coffeeMachine', x: 2.6,  z: -4.7, rotY: 0 },
+    { type: 'barStool',      x: -0.7, z: -0.5, rotY: Math.PI },
+    { type: 'barStool',      x: 0.7,  z: -0.5, rotY: Math.PI }
+  ]},
+  bathroom: { items: [
+    { type: 'bathtub',  x: -2,    z: -3.5, rotY: 0 },
+    { type: 'toilet',   x: 2.5,   z: -4,   rotY: 0 },
+    { type: 'bathSink', x: 1,     z: -4.5, rotY: 0 },
+    { type: 'shower',   x: -3.5,  z: 0,    rotY: 0 },
+    { type: 'mirror',   x: 1,     z: -4.85, rotY: 0 }
+  ]},
+  kids: { items: [
+    { type: 'bed',        x: -2,   z: -3, rotY: 0 },
+    { type: 'wardrobe',   x: 3,    z: -3.5, rotY: 0 },
+    { type: 'desk',       x: 1,    z: -1, rotY: 0 },
+    { type: 'chair',      x: 1,    z: -0.2, rotY: Math.PI },
+    { type: 'plant',      x: -3.5, z: -1, rotY: 0 },
+    { type: 'carpet',     x: 0,    z: 1,   rotY: 0 }
+  ]},
+  office: { items: [
+    { type: 'desk',       x: 0,    z: -2.5, rotY: 0 },
+    { type: 'chair',      x: 0,    z: -1.5, rotY: Math.PI },
+    { type: 'bookshelf',  x: -3.6, z: -1, rotY: Math.PI / 2 },
+    { type: 'lamp',       x: 1.5,  z: -3.5, rotY: 0 },
+    { type: 'carpet',     x: 0,    z: -1.8, rotY: 0 },
+    { type: 'plant',      x: 3,    z: -3.5, rotY: 0 }
+  ]},
+  hallway: { items: [
+    { type: 'coatRack', x: -2,   z: -3, rotY: 0 },
+    { type: 'mirror',   x: 2,    z: -4.85, rotY: 0 },
+    { type: 'carpet',   x: 0,    z: 0, rotY: 0 }
+  ]}
+};
+
+const STYLES = {
+  scandi:  { walls: '#f0ece0', floor: '#d8c4a8', tint: 0xeae0d0 },
+  loft:    { walls: '#7a6a5a', floor: '#3a3028', tint: 0x6a5a4a },
+  minimal: { walls: '#f8f8f8', floor: '#e0d8c8', tint: 0xeeeeee },
+  deco:    { walls: '#3a2a3a', floor: '#5a4a3a', tint: 0xd4b860 },
+  classic: { walls: '#ead8b8', floor: '#7a5a3a', tint: 0x8b6b3a },
+  boho:    { walls: '#c4a888', floor: '#6a4a2a', tint: 0xa8745a },
+  japan:   { walls: '#eaddc8', floor: '#5a4030', tint: 0x4a3525 },
+  modern:  { walls: '#d8c9a8', floor: '#a88a6a', tint: 0x6b8a72 }
+};
+
+function detectRoomType(text) {
+  const p = text.toLowerCase();
+  if (/гостин|living/.test(p)) return 'living';
+  if (/спал|bedroom/.test(p)) return 'bedroom';
+  if (/кух|kitchen/.test(p)) return 'kitchen';
+  if (/ванн|bath/.test(p)) return 'bathroom';
+  if (/детск|kids|child|nursery/.test(p)) return 'kids';
+  if (/кабинет|office|study/.test(p)) return 'office';
+  if (/прихож|hall|entry|entrance/.test(p)) return 'hallway';
+  return 'living';
 }
 
-function generateImage(prompt, useNewSeed = true) {
-  if (!prompt.trim()) {
-    aiPrompt.focus();
+function detectStyle(text) {
+  const p = text.toLowerCase();
+  if (/скандин|scandi|nordic/.test(p)) return 'scandi';
+  if (/лофт|loft|industrial|индустр/.test(p)) return 'loft';
+  if (/минимал|minimal/.test(p)) return 'minimal';
+  if (/ар.?деко|art.?deco/.test(p)) return 'deco';
+  if (/классик|classic|barocco|baroque/.test(p)) return 'classic';
+  if (/бохо|boho|bohemian/.test(p)) return 'boho';
+  if (/японск|japan|wabi/.test(p)) return 'japan';
+  return 'modern';
+}
+
+function addExtras(items, text) {
+  const p = text.toLowerCase();
+  const has = (t) => items.some(i => i.type === t);
+  if (/камин|fireplace/.test(p) && !has('fireplace')) items.push({ type: 'fireplace', x: -3.5, z: -4.5, rotY: 0 });
+  if (/пианино|piano/.test(p) && !has('piano')) items.push({ type: 'piano', x: 3, z: -4.5, rotY: 0 });
+  if (/аквариум|aquarium|fish/.test(p) && !has('fishtank')) items.push({ type: 'fishtank', x: -3, z: -1, rotY: 0 });
+  if (/растен|plant|зелён|green/.test(p)) {
+    items.push({ type: 'plant', x: 3.5, z: 3, rotY: 0 });
+  }
+  if (/картин|picture|painting/.test(p) && !has('picture')) items.push({ type: 'picture', x: 2.5, z: -4.85, rotY: 0 });
+  if (/часы|clock/.test(p) && !has('clock')) items.push({ type: 'clock', x: -1, z: -4.9, rotY: 0 });
+  if (/ваза|vase|цветы|flower/.test(p) && !has('vase')) items.push({ type: 'vase', x: 0, z: -1.2, rotY: 0 });
+  if (/глобус|globe/.test(p) && !has('globe')) items.push({ type: 'globe', x: 2, z: -2, rotY: 0 });
+  if (/торшер|lamp/.test(p) && !has('lamp')) items.push({ type: 'lamp', x: -3, z: -1, rotY: 0 });
+  if (/ковёр|ковер|carpet|rug/.test(p) && !has('carpet')) items.push({ type: 'carpet', x: 0, z: 0, rotY: 0 });
+  if (/штор|curtain|drape/.test(p) && !has('curtain')) items.push({ type: 'curtain', x: 0, z: -4.95, rotY: 0 });
+  if (/зеркал|mirror/.test(p) && !has('mirror')) items.push({ type: 'mirror', x: 3.5, z: -4.8, rotY: -Math.PI / 8 });
+  return items;
+}
+
+function generateRoom(useNewSeed = true) {
+  const text = aiPrompt.value.trim();
+  if (!text) { aiPrompt.focus(); return; }
+  if (!window.renderRoomComposition) {
+    aiEmpty.innerHTML = '<span class="icon">⏳</span><p>3D движок ещё загружается, попробуй через секунду.</p>';
+    aiEmpty.style.display = '';
     return;
   }
-  lastPrompt = prompt;
-  if (useNewSeed) lastSeed = Math.floor(Math.random() * 1000000);
-  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(buildPrompt(prompt))}?width=1024&height=768&model=flux&nologo=true&seed=${lastSeed}`;
 
   aiEmpty.style.display = 'none';
   aiActions.style.display = 'none';
   aiImage.style.display = 'none';
   aiLoading.style.display = '';
 
-  const img = new Image();
-  img.onload = () => {
-    aiImage.src = img.src;
-    aiImage.style.display = '';
-    aiLoading.style.display = 'none';
-    aiActions.style.display = '';
-  };
-  img.onerror = () => {
-    aiLoading.style.display = 'none';
-    aiEmpty.style.display = '';
-    aiEmpty.innerHTML = '<span class="icon">😢</span><p>Не удалось сгенерировать. Попробуйте ещё раз или измените запрос.</p>';
-  };
-  img.src = url;
+  setTimeout(() => {
+    try {
+      const type = detectRoomType(text);
+      const style = detectStyle(text);
+      const stl = STYLES[style];
+      // Clone template items
+      let items = (ROOM_TEMPLATES[type].items || []).map(it => ({ ...it }));
+      items = addExtras(items, text);
+      // Apply style tint to items that don't already have specific colors
+      items.forEach(it => {
+        if (it.color == null) it.color = stl.tint;
+      });
+      // Compute total price
+      const totalPrice = items.reduce((s, it) => s + (FURNITURE[it.type]?.price || 0), 0) + 2500;
+      const itemCount = items.length;
+      // Render the scene
+      const dataUrl = window.renderRoomComposition(items, stl.walls, stl.floor);
+      lastGeneratedRoom = {
+        name: `AI: ${text.slice(0, 40)}${text.length > 40 ? '…' : ''}`,
+        items, walls: stl.walls, floor: stl.floor, totalPrice, itemCount
+      };
+      aiImage.src = dataUrl;
+      aiImage.style.display = '';
+      aiLoading.style.display = 'none';
+      aiActions.style.display = '';
+      // Update button with price
+      const buyBtn = document.getElementById('aiDownloadBtn');
+      buyBtn.textContent = `🪙 ${(currentLang === 'en' ? 'Buy this room' : 'Купить эту комнату')} · ${totalPrice.toLocaleString('ru-RU')} MTC`;
+    } catch (e) {
+      console.error('generation error', e);
+      aiLoading.style.display = 'none';
+      aiEmpty.innerHTML = '<span class="icon">😢</span><p>Не удалось сгенерировать. Попробуйте ещё раз.</p>';
+      aiEmpty.style.display = '';
+    }
+  }, 50);
 }
 
-document.getElementById('generateBtn').addEventListener('click', () => {
-  generateImage(aiPrompt.value);
-});
+document.getElementById('generateBtn').addEventListener('click', () => generateRoom(true));
 
 aiPrompt.addEventListener('keydown', (e) => {
-  if (e.ctrlKey && e.key === 'Enter') generateImage(aiPrompt.value);
+  if (e.ctrlKey && e.key === 'Enter') generateRoom(true);
 });
 
 document.getElementById('aiClearBtn').addEventListener('click', () => {
@@ -3074,23 +3203,16 @@ document.getElementById('aiClearBtn').addEventListener('click', () => {
   aiPrompt.focus();
 });
 
-document.getElementById('aiRegenBtn').addEventListener('click', () => {
-  generateImage(lastPrompt, true);
-});
+document.getElementById('aiRegenBtn').addEventListener('click', () => generateRoom(true));
 
-document.getElementById('aiDownloadBtn').addEventListener('click', async () => {
-  try {
-    const r = await fetch(aiImage.src);
-    const blob = await r.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `shtorix-interior-${Date.now()}.jpg`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-  } catch {
-    window.open(aiImage.src, '_blank');
-  }
+document.getElementById('aiDownloadBtn').addEventListener('click', () => {
+  if (!lastGeneratedRoom) return;
+  if (!window.loadRoom) return;
+  // Load room into 3D builder
+  window.loadRoom(lastGeneratedRoom);
+  // Scroll to builder
+  document.getElementById('builder-section').scrollIntoView({ behavior: 'smooth' });
+  showFeedToast(currentLang === 'en' ? 'Room loaded into 3D builder! Buy with MTC.' : 'Комната загружена в 3D-конструктор! Купи за MTC.', '🪙');
 });
 
 // Preset chips
@@ -3153,7 +3275,7 @@ const T = {
     'feed.desc': 'Сохраняйте свои интерьеры локально или выкладывайте в общую ленту — там их увидят все пользователи Shtorix.',
     'ai.tag': 'AI-Дизайнер',
     'ai.title': 'Сгенерируйте Интерьер Мечты',
-    'ai.desc': 'Опишите комнату своими словами — нейросеть нарисует фотореалистичное изображение интерьера за несколько секунд. Можно использовать готовые пресеты или писать собственный запрос.',
+    'ai.desc': 'Опишите комнату своими словами — сайт мгновенно соберёт её в 3D из реальной мебели каталога. Готовую комнату можно купить за MTC или открыть в конструкторе для тонкой настройки.',
     'settings.title': 'Настройки',
     'settings.subtitle': 'Настройте сайт под себя',
     'settings.language': 'Язык',
@@ -3204,8 +3326,8 @@ const T = {
     'ai.s_deco': '✨ Ар-деко', 'ai.s_classic': '🏛️ Классика', 'ai.s_modern': '🔷 Модерн',
     'ai.s_boho': '🌿 Бохо', 'ai.s_japan': '🎋 Японский',
     'ai.gen': '✨ Сгенерировать', 'ai.empty': 'Опишите комнату и нажмите «Сгенерировать»',
-    'ai.loading': 'Создаём ваш интерьер...', 'ai.wait': '5–15 секунд',
-    'ai.again': '↻ Заново', 'ai.download': '⬇ Скачать',
+    'ai.loading': 'Создаём вашу 3D-комнату...', 'ai.wait': 'Несколько секунд',
+    'ai.again': '↻ Заново', 'ai.download': '⬇ Скачать', 'ai.buy': '🪙 Купить эту комнату',
     'footer.text': 'SHTORIX · shtorix.com · Мебель, интерьер и AI-дизайн'
   },
   en: {
@@ -3238,7 +3360,7 @@ const T = {
     'feed.desc': 'Save your interiors locally or publish them to the global feed — every Shtorix user will see them.',
     'ai.tag': 'AI Designer',
     'ai.title': 'Generate Your Dream Interior',
-    'ai.desc': 'Describe a room in your own words — the AI will paint a photorealistic image in seconds. Use presets or write your own prompt.',
+    'ai.desc': 'Describe your dream room — the site builds it in 3D from real furniture instantly. You can buy it or tweak it in the 3D builder.',
     'settings.title': 'Settings',
     'settings.subtitle': 'Customize the site',
     'settings.language': 'Language',
@@ -3289,8 +3411,8 @@ const T = {
     'ai.s_deco': '✨ Art Deco', 'ai.s_classic': '🏛️ Classic', 'ai.s_modern': '🔷 Modern',
     'ai.s_boho': '🌿 Boho', 'ai.s_japan': '🎋 Japanese',
     'ai.gen': '✨ Generate', 'ai.empty': 'Describe a room and click «Generate»',
-    'ai.loading': 'Creating your interior...', 'ai.wait': '5–15 seconds',
-    'ai.again': '↻ Again', 'ai.download': '⬇ Download',
+    'ai.loading': 'Building your 3D room...', 'ai.wait': 'A few seconds',
+    'ai.again': '↻ Again', 'ai.download': '⬇ Download', 'ai.buy': '🪙 Buy this room',
     'footer.text': 'SHTORIX · shtorix.com · Furniture, interiors & AI design'
   }
 };
@@ -6438,6 +6560,91 @@ window.showPreview3D = function(modelKey) {
 window.hidePreview3D = function() {
   previewWrap.style.display = 'none';
   autoRotate = true;
+};
+
+// ============ Offscreen Room Composition Renderer ============
+const roomCanvas = document.createElement('canvas');
+roomCanvas.width = 1280; roomCanvas.height = 800;
+const roomRenderer = new THREE.WebGLRenderer({ canvas: roomCanvas, antialias: true, preserveDrawingBuffer: true });
+roomRenderer.setPixelRatio(2);
+roomRenderer.shadowMap.enabled = true;
+roomRenderer.shadowMap.type = THREE.PCFSoftShadowMap;
+roomRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+roomRenderer.toneMappingExposure = 1.0;
+roomRenderer.outputColorSpace = THREE.SRGBColorSpace;
+
+const roomScene = new THREE.Scene();
+roomScene.environment = envTex;
+roomScene.background = new THREE.Color(0x1a2520);
+roomScene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const roomSun = new THREE.DirectionalLight(0xffe8c4, 0.95);
+roomSun.position.set(7, 12, 7);
+roomSun.castShadow = true;
+roomSun.shadow.mapSize.set(1024, 1024);
+roomSun.shadow.camera.left = -10; roomSun.shadow.camera.right = 10;
+roomSun.shadow.camera.top = 10; roomSun.shadow.camera.bottom = -10;
+roomScene.add(roomSun);
+const roomFill = new THREE.DirectionalLight(0xa0c4ff, 0.3);
+roomFill.position.set(-5, 5, -5);
+roomScene.add(roomFill);
+
+const ROOM_W = 10;
+const roomFloor = new THREE.Mesh(
+  new THREE.PlaneGeometry(ROOM_W, ROOM_W),
+  new THREE.MeshStandardMaterial({ color: 0xa88a6a, roughness: 0.78, map: makeFloorTexture() })
+);
+roomFloor.rotation.x = -Math.PI / 2;
+roomFloor.receiveShadow = true;
+roomScene.add(roomFloor);
+const roomBackWall = new THREE.Mesh(
+  new THREE.PlaneGeometry(ROOM_W, 5),
+  new THREE.MeshStandardMaterial({ color: 0xd8c9a8, roughness: 0.95 })
+);
+roomBackWall.position.set(0, 2.5, -ROOM_W / 2);
+roomBackWall.receiveShadow = true;
+roomScene.add(roomBackWall);
+const roomLeftWall = new THREE.Mesh(
+  new THREE.PlaneGeometry(ROOM_W, 5),
+  new THREE.MeshStandardMaterial({ color: 0xd8c9a8, roughness: 0.95 })
+);
+roomLeftWall.rotation.y = Math.PI / 2;
+roomLeftWall.position.set(-ROOM_W / 2, 2.5, 0);
+roomLeftWall.receiveShadow = true;
+roomScene.add(roomLeftWall);
+
+const roomCam = new THREE.PerspectiveCamera(48, 1280 / 800, 0.1, 100);
+roomCam.position.set(7, 6, 9);
+roomCam.lookAt(0, 1.2, 0);
+
+window.renderRoomComposition = function(items, wallColor, floorColor) {
+  // Apply colors
+  if (wallColor) {
+    roomBackWall.material.color.set(wallColor);
+    roomLeftWall.material.color.set(wallColor);
+  }
+  if (floorColor) roomFloor.material.color.set(floorColor);
+
+  // Clear previous items (keep lights, floor, walls)
+  for (let i = roomScene.children.length - 1; i >= 0; i--) {
+    const c = roomScene.children[i];
+    if (c.isLight || c === roomFloor || c === roomBackWall || c === roomLeftWall) continue;
+    roomScene.remove(c);
+    c.traverse(o => { if (o.geometry) o.geometry.dispose(); });
+  }
+
+  // Build all items
+  (items || []).forEach(it => {
+    if (!FURNITURE[it.type]) return;
+    const def = FURNITURE[it.type];
+    const obj = def.build(it.color != null ? it.color : def.color);
+    obj.position.set(it.x || 0, it.y || 0, it.z || 0);
+    obj.rotation.y = it.rotY || 0;
+    roomScene.add(obj);
+  });
+
+  roomRenderer.setSize(1280, 800, false);
+  roomRenderer.render(roomScene, roomCam);
+  return roomCanvas.toDataURL('image/jpeg', 0.85);
 };
 
 // ============ Offscreen 3D Thumbnail Renderer ============
