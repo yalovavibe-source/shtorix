@@ -53,6 +53,33 @@
     padding: 20px;
     animation: fadeUp 1.2s ease-out;
   }
+  .creators-badge {
+    display: inline-block;
+    padding: 8px 24px;
+    margin-bottom: 25px;
+    background: linear-gradient(135deg, rgba(212,184,96,0.15), rgba(212,184,96,0.05));
+    border: 1px solid rgba(212,184,96,0.5);
+    border-radius: 50px;
+    color: var(--cream);
+    font-size: 0.85rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: 500;
+    box-shadow: 0 6px 20px rgba(212,184,96,0.15);
+    animation: badgePulse 3s ease-in-out infinite;
+  }
+  .creators-badge .creators-name {
+    margin-left: 10px;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-weight: 800;
+    letter-spacing: 5px;
+    text-shadow: 0 0 12px rgba(212,184,96,0.4);
+  }
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 6px 20px rgba(212,184,96,0.15); }
+    50% { box-shadow: 0 6px 30px rgba(212,184,96,0.4); }
+  }
   .hero h1 {
     font-family: 'Cinzel', serif;
     font-size: clamp(2.5rem, 7vw, 5.5rem);
@@ -1903,6 +1930,7 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-content">
+    <div class="creators-badge">СОЗДАТЕЛИ <span class="creators-name">MUHA</span></div>
     <h1>SHTORIX</h1>
     <p class="subtitle">Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.</p>
     <button class="btn btn-pulse" onclick="scrollToSpecies()">
