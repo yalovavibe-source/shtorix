@@ -112,6 +112,63 @@
     z-index: 2;
   }
 
+  /* ===== SETTINGS ===== */
+  .settings-btn {
+    position: fixed;
+    top: 90px;
+    right: 30px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(31,77,46,0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(212,184,96,0.4);
+    color: var(--gold);
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 90;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .settings-btn:hover { transform: scale(1.1) rotate(60deg); border-color: var(--gold); }
+  .settings-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid rgba(212,184,96,0.15);
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  .settings-row:last-child { border-bottom: none; }
+  .settings-label {
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .lang-options {
+    display: flex;
+    gap: 8px;
+  }
+  .lang-btn {
+    padding: 10px 20px;
+    background: rgba(31,77,46,0.4);
+    border: 1px solid rgba(212,184,96,0.3);
+    border-radius: 30px;
+    color: var(--cream);
+    font-family: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .lang-btn:hover { border-color: var(--gold); }
+  .lang-btn.active {
+    background: linear-gradient(135deg, var(--gold), #b89a4a);
+    color: var(--bg-dark);
+    border-color: transparent;
+  }
+
   /* ===== AUDIO CONTROLS ===== */
   .sound-row {
     position: fixed;
@@ -1930,11 +1987,11 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-content">
-    <div class="creators-badge">СОЗДАТЕЛИ <span class="creators-name">MUHA</span></div>
+    <div class="creators-badge"><span data-i18n="hero.creators">СОЗДАТЕЛИ</span> <span class="creators-name">MUHA</span></div>
     <h1>SHTORIX</h1>
-    <p class="subtitle">Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.</p>
+    <p class="subtitle" data-i18n="hero.subtitle">Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.</p>
     <button class="btn btn-pulse" onclick="scrollToSpecies()">
-      Смотреть каталог <span class="arrow">↓</span>
+      <span data-i18n="hero.cta">Смотреть каталог</span> <span class="arrow">↓</span>
     </button>
   </div>
   <div class="scroll-indicator">▼</div>
@@ -1945,7 +2002,7 @@
   <div class="search-row">
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="Поиск по мебели, материалам, стилям..." oninput="searchContent()">
+      <input type="text" id="searchInput" placeholder="Поиск по мебели, материалам, стилям..." data-i18n-placeholder="search.placeholder" oninput="searchContent()">
     </div>
     <button class="metcoin-badge" id="metcoinBadge" onclick="openMetcoinModal()" title="Кошелёк MTC">
       <span class="coin">🪙</span><span class="metcoin-balance">0 MTC</span>
@@ -1964,10 +2021,10 @@
 
 <!-- STATS -->
 <div class="stats">
-  <div class="stat"><span class="stat-num">5000<sup>+</sup></span><div class="stat-label">Лет истории мебели</div></div>
-  <div class="stat"><span class="stat-num">8</span><div class="stat-label">Категорий в каталоге</div></div>
-  <div class="stat"><span class="stat-num">120<sup>+</sup></span><div class="stat-label">Стилей и эпох</div></div>
-  <div class="stat"><span class="stat-num">100<sup>%</sup></span><div class="stat-label">Натуральные материалы</div></div>
+  <div class="stat"><span class="stat-num">5000<sup>+</sup></span><div class="stat-label" data-i18n="stats.years">Лет истории мебели</div></div>
+  <div class="stat"><span class="stat-num">8</span><div class="stat-label" data-i18n="stats.categories">Категорий в каталоге</div></div>
+  <div class="stat"><span class="stat-num">120<sup>+</sup></span><div class="stat-label" data-i18n="stats.styles">Стилей и эпох</div></div>
+  <div class="stat"><span class="stat-num">100<sup>%</sup></span><div class="stat-label" data-i18n="stats.materials">Натуральные материалы</div></div>
 </div>
 
 <div class="container">
@@ -1975,9 +2032,9 @@
 <!-- SPECIES -->
 <section class="section" id="species">
   <div class="section-header">
-    <span class="section-tag">Каталог</span>
-    <h2 class="section-title">Мебель Для Дома</h2>
-    <p class="section-desc">От лёгких занавесей, наполняющих комнату светом, до массивных шкафов с историей — выберите то, что станет частью вашего интерьера.</p>
+    <span class="section-tag" data-i18n="catalog.tag">Каталог</span>
+    <h2 class="section-title" data-i18n="catalog.title">Мебель Для Дома</h2>
+    <p class="section-desc" data-i18n="catalog.desc">От лёгких занавесей, наполняющих комнату светом, до массивных шкафов с историей — выберите то, что станет частью вашего интерьера.</p>
   </div>
   <div class="filter-bar" id="filterBar">
     <button class="filter-btn active" data-filter="all">Все</button>
@@ -1995,9 +2052,9 @@
 <!-- 3D BUILDER -->
 <section class="section" id="builder-section">
   <div class="section-header">
-    <span class="section-tag">3D-Конструктор</span>
-    <h2 class="section-title">Соберите Свой Интерьер</h2>
-    <p class="section-desc">Расставьте мебель в виртуальной комнате, поверните и перекрасьте каждый предмет, посчитайте цену и оформите заказ — всё в одном окне.</p>
+    <span class="section-tag" data-i18n="builder.tag">3D-Конструктор</span>
+    <h2 class="section-title" data-i18n="builder.title">Соберите Свой Интерьер</h2>
+    <p class="section-desc" data-i18n="builder.desc">Расставьте мебель в виртуальной комнате, поверните и перекрасьте каждый предмет, посчитайте цену и оформите заказ — всё в одном окне.</p>
   </div>
   <div class="builder">
     <aside class="builder-sidebar">
@@ -2092,9 +2149,9 @@
 <!-- ROOMS FEED -->
 <section class="section" id="feed-section">
   <div class="section-header">
-    <span class="section-tag">Лента</span>
-    <h2 class="section-title">Лента Интерьеров</h2>
-    <p class="section-desc">Сохраняйте свои интерьеры локально или выкладывайте в общую ленту — там их увидят все пользователи Shtorix.</p>
+    <span class="section-tag" data-i18n="feed.tag">Лента</span>
+    <h2 class="section-title" data-i18n="feed.title">Лента Интерьеров</h2>
+    <p class="section-desc" data-i18n="feed.desc">Сохраняйте свои интерьеры локально или выкладывайте в общую ленту — там их увидят все пользователи Shtorix.</p>
   </div>
   <div class="feed-tabs">
     <button class="feed-tab active" data-tab="mine">📁 Мои комнаты <span class="count" id="mineCount">0</span></button>
@@ -2169,9 +2226,9 @@
 <!-- AI GENERATOR -->
 <section class="section" id="ai-section">
   <div class="section-header">
-    <span class="section-tag">AI-Дизайнер</span>
-    <h2 class="section-title">Сгенерируйте Интерьер Мечты</h2>
-    <p class="section-desc">Опишите комнату своими словами — нейросеть нарисует фотореалистичное изображение интерьера за несколько секунд. Можно использовать готовые пресеты или писать собственный запрос.</p>
+    <span class="section-tag" data-i18n="ai.tag">AI-Дизайнер</span>
+    <h2 class="section-title" data-i18n="ai.title">Сгенерируйте Интерьер Мечты</h2>
+    <p class="section-desc" data-i18n="ai.desc">Опишите комнату своими словами — нейросеть нарисует фотореалистичное изображение интерьера за несколько секунд. Можно использовать готовые пресеты или писать собственный запрос.</p>
   </div>
   <div class="ai-generator">
     <div class="ai-input-wrap">
@@ -2376,6 +2433,33 @@
 </div>
 
 <button class="back-to-top" id="backToTop" onclick="scrollToTop()" aria-label="Наверх">↑</button>
+<button class="settings-btn" id="settingsBtn" onclick="openSettings()" title="Настройки" aria-label="Настройки">⚙️</button>
+
+<!-- SETTINGS MODAL -->
+<div class="modal" id="settingsModal">
+  <div class="modal-content" style="max-width:520px">
+    <div class="modal-body">
+      <button class="close-btn" onclick="closeSettings()" style="position:absolute;top:20px;right:20px">×</button>
+      <h2 data-i18n="settings.title">Настройки</h2>
+      <p class="latin-name" data-i18n="settings.subtitle" style="margin-bottom:25px">Настройте сайт под себя</p>
+      <div class="settings-row">
+        <div class="settings-label" data-i18n="settings.language">Язык</div>
+        <div class="lang-options">
+          <button class="lang-btn" data-lang="ru">🇷🇺 Русский</button>
+          <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label">🪙 MTC <span data-i18n="settings.balance">баланс</span></div>
+        <div class="metcoin-balance" style="color:var(--gold);font-weight:700"></div>
+      </div>
+      <div class="settings-row">
+        <div class="settings-label" data-i18n="settings.user_id">User ID</div>
+        <div style="font-family:monospace;font-size:0.85rem;opacity:0.7" id="settingsUserId"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="sound-row" style="bottom: 100px">
   <button class="audio-toggle" id="audioToggle" title="Звук + птицы" aria-label="Звук">🔊</button>
   <div class="vol-pop"><input type="range" id="masterVol" min="0" max="100" value="100" title="Громкость птиц"></div>
@@ -3008,6 +3092,110 @@ document.querySelectorAll('#stylePresets .preset-btn').forEach(btn => {
 });
 
 renderCrocodiles(crocodiles);
+
+// ===== I18N / LANGUAGE SETTINGS =====
+const T = {
+  ru: {
+    'hero.creators': 'СОЗДАТЕЛИ',
+    'hero.subtitle': 'Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.',
+    'hero.cta': 'Смотреть каталог',
+    'search.placeholder': 'Поиск по мебели, материалам, стилям...',
+    'stats.years': 'Лет истории мебели',
+    'stats.categories': 'Категорий в каталоге',
+    'stats.styles': 'Стилей и эпох',
+    'stats.materials': 'Натуральные материалы',
+    'catalog.tag': 'Каталог',
+    'catalog.title': 'Мебель Для Дома',
+    'catalog.desc': 'От лёгких занавесей, наполняющих комнату светом, до массивных шкафов с историей — выберите то, что станет частью вашего интерьера.',
+    'builder.tag': '3D-Конструктор',
+    'builder.title': 'Соберите Свой Интерьер',
+    'builder.desc': 'Расставьте мебель в виртуальной комнате, поверните и перекрасьте каждый предмет, посчитайте цену и оформите заказ — всё в одном окне.',
+    'feed.tag': 'Лента',
+    'feed.title': 'Лента Интерьеров',
+    'feed.desc': 'Сохраняйте свои интерьеры локально или выкладывайте в общую ленту — там их увидят все пользователи Shtorix.',
+    'ai.tag': 'AI-Дизайнер',
+    'ai.title': 'Сгенерируйте Интерьер Мечты',
+    'ai.desc': 'Опишите комнату своими словами — нейросеть нарисует фотореалистичное изображение интерьера за несколько секунд. Можно использовать готовые пресеты или писать собственный запрос.',
+    'settings.title': 'Настройки',
+    'settings.subtitle': 'Настройте сайт под себя',
+    'settings.language': 'Язык',
+    'settings.balance': 'баланс',
+    'settings.user_id': 'ID пользователя'
+  },
+  en: {
+    'hero.creators': 'CREATED BY',
+    'hero.subtitle': 'Furniture catalog, 3D interior builder and AI designer in one place. Build your room, view it in three dimensions and place an order — all in a single session.',
+    'hero.cta': 'Browse Catalog',
+    'search.placeholder': 'Search furniture, materials, styles...',
+    'stats.years': 'Years of furniture history',
+    'stats.categories': 'Catalog categories',
+    'stats.styles': 'Styles and eras',
+    'stats.materials': 'Natural materials',
+    'catalog.tag': 'Catalog',
+    'catalog.title': 'Furniture For Home',
+    'catalog.desc': 'From light curtains filling rooms with sunlight to massive heritage wardrobes — pick what becomes part of your interior.',
+    'builder.tag': '3D Builder',
+    'builder.title': 'Build Your Interior',
+    'builder.desc': 'Arrange furniture in a virtual room, rotate and recolor every item, see the price and place an order — all in one window.',
+    'feed.tag': 'Feed',
+    'feed.title': 'Interiors Feed',
+    'feed.desc': 'Save your interiors locally or publish them to the global feed — every Shtorix user will see them.',
+    'ai.tag': 'AI Designer',
+    'ai.title': 'Generate Your Dream Interior',
+    'ai.desc': 'Describe a room in your own words — the AI will paint a photorealistic image in seconds. Use presets or write your own prompt.',
+    'settings.title': 'Settings',
+    'settings.subtitle': 'Customize the site',
+    'settings.language': 'Language',
+    'settings.balance': 'balance',
+    'settings.user_id': 'User ID'
+  }
+};
+
+let currentLang = localStorage.getItem('shtorix_lang') || (navigator.language.startsWith('en') ? 'en' : 'ru');
+
+function applyTranslations() {
+  const dict = T[currentLang] || T.ru;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (dict[key]) el.placeholder = dict[key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
+  });
+  document.documentElement.lang = currentLang;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('shtorix_lang', lang);
+  applyTranslations();
+}
+
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  const uid = localStorage.getItem('shtorix_userid') || '—';
+  document.getElementById('settingsUserId').textContent = uid;
+}
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.lang-btn').forEach(b => {
+  b.addEventListener('click', () => setLang(b.dataset.lang));
+});
+document.getElementById('settingsModal').addEventListener('click', (e) => {
+  if (e.target.id === 'settingsModal') closeSettings();
+});
+window.openSettings = openSettings;
+window.closeSettings = closeSettings;
+
+applyTranslations();
 
 // ===== METCOIN WALLET =====
 const MTC = {
