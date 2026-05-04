@@ -190,36 +190,30 @@
     border-color: transparent;
   }
 
-  /* ===== AUDIO CONTROLS ===== */
-  .sound-row {
-    position: fixed;
-    right: 30px;
-    z-index: 90;
+  /* ===== AUDIO CONTROLS (in settings) ===== */
+  .sound-settings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sound-setting {
     display: flex;
     align-items: center;
-    flex-direction: row-reverse;
+    gap: 14px;
+    padding: 8px 0;
   }
-  .sound-row .vol-pop {
-    width: 0;
-    overflow: hidden;
-    transition: width 0.35s, margin-right 0.35s;
-    margin-right: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(10px);
-    border-radius: 30px;
-    border: 1px solid rgba(212,184,96,0.3);
-    height: 36px;
-    display: flex;
-    align-items: center;
-    padding: 0;
+  .sound-setting > button {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
   }
-  .sound-row:hover .vol-pop {
-    width: 130px;
-    margin-right: 10px;
-    padding: 0 14px;
+  .sound-name {
+    flex: 0 0 110px;
+    color: var(--cream);
+    font-size: 0.92rem;
   }
-  .sound-row .vol-pop input[type="range"] {
-    width: 100%;
+  .sound-setting input[type="range"] {
+    flex: 1;
     -webkit-appearance: none;
     appearance: none;
     height: 4px;
@@ -228,7 +222,7 @@
     outline: none;
     cursor: pointer;
   }
-  .sound-row .vol-pop input[type="range"]::-webkit-slider-thumb {
+  .sound-setting input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 16px; height: 16px;
@@ -237,7 +231,7 @@
     cursor: pointer;
     border: 2px solid var(--bg-mid);
   }
-  .sound-row .vol-pop input[type="range"]::-moz-range-thumb {
+  .sound-setting input[type="range"]::-moz-range-thumb {
     width: 16px; height: 16px;
     border-radius: 50%;
     background: var(--gold);
@@ -2008,7 +2002,7 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-content">
-    <div class="creators-badge"><span data-i18n="hero.creators">СОЗДАТЕЛИ</span><span class="creators-name">МЕЛИКОВ МУХАММАД</span></div>
+    <div class="creators-badge"><span data-i18n="hero.creators">СОЗДАТЕЛИ</span><span class="creators-name" data-i18n="hero.creator_name">МЕЛИКОВ МУХАММАД</span></div>
     <div class="based-on" data-i18n-html="hero.basedon_html">Игра основана на <span class="based-name">Let's Create! Pottery</span></div>
     <h1>SHTORIX</h1>
     <p class="subtitle" data-i18n="hero.subtitle">Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.</p>
@@ -2471,6 +2465,47 @@
           <button class="lang-btn" data-lang="en">🇬🇧 English</button>
         </div>
       </div>
+
+      <div class="settings-row" style="display:block;border-bottom:1px solid rgba(212,184,96,0.15);padding-bottom:8px">
+        <div class="settings-label" style="margin-bottom:14px"><span data-i18n="settings.sounds">Звуки</span> 🎵</div>
+        <div class="sound-settings-grid">
+          <div class="sound-setting">
+            <button class="audio-toggle" id="audioToggle" title="Birds + master" aria-label="Audio">🔊</button>
+            <div class="sound-name" data-i18n="snd.birds">Птицы</div>
+            <input type="range" id="masterVol" min="0" max="100" value="100">
+          </div>
+          <div class="sound-setting">
+            <button class="rain-toggle" id="rainToggle" title="Rain" aria-label="Rain">🌧️</button>
+            <div class="sound-name" data-i18n="snd.rain">Дождь</div>
+            <input type="range" id="rainVol" min="0" max="100" value="60">
+          </div>
+          <div class="sound-setting">
+            <button class="sea-toggle" id="seaToggle" title="Sea" aria-label="Sea">🌊</button>
+            <div class="sound-name" data-i18n="snd.sea">Море</div>
+            <input type="range" id="seaVol" min="0" max="100" value="60">
+          </div>
+          <div class="sound-setting">
+            <button class="wood-toggle active" id="woodToggle" title="Wood drag" aria-label="Wood">🪵</button>
+            <div class="sound-name" data-i18n="snd.wood">Скрип дерева</div>
+            <input type="range" id="woodVol" min="0" max="100" value="80">
+          </div>
+          <div class="sound-setting">
+            <button class="raven-toggle" id="ravenToggle" title="Ravens" aria-label="Ravens">🐦‍⬛</button>
+            <div class="sound-name" data-i18n="snd.raven">Вороны</div>
+            <input type="range" id="ravenVol" min="0" max="100" value="50">
+          </div>
+          <div class="sound-setting">
+            <button class="forest-toggle" id="forestToggle" title="Forest" aria-label="Forest">🌲</button>
+            <div class="sound-name" data-i18n="snd.forest">Лес</div>
+            <input type="range" id="forestVol" min="0" max="100" value="60">
+          </div>
+          <div class="sound-setting">
+            <button class="fire-toggle" id="fireToggle" title="Fire" aria-label="Fire">🔥</button>
+            <div class="sound-name" data-i18n="snd.fire">Костёр</div>
+            <input type="range" id="fireVol" min="0" max="100" value="60">
+          </div>
+        </div>
+      </div>
       <div class="settings-row">
         <div class="settings-label">🪙 MTC <span data-i18n="settings.balance">баланс</span></div>
         <div class="metcoin-balance" style="color:var(--gold);font-weight:700"></div>
@@ -2481,34 +2516,6 @@
       </div>
     </div>
   </div>
-</div>
-<div class="sound-row" style="bottom: 100px">
-  <button class="audio-toggle" id="audioToggle" title="Звук + птицы" aria-label="Звук">🔊</button>
-  <div class="vol-pop"><input type="range" id="masterVol" min="0" max="100" value="100" title="Громкость птиц"></div>
-</div>
-<div class="sound-row" style="bottom: 158px">
-  <button class="rain-toggle" id="rainToggle" title="Дождь" aria-label="Дождь">🌧️</button>
-  <div class="vol-pop"><input type="range" id="rainVol" min="0" max="100" value="60" title="Громкость дождя"></div>
-</div>
-<div class="sound-row" style="bottom: 216px">
-  <button class="sea-toggle" id="seaToggle" title="Море" aria-label="Море">🌊</button>
-  <div class="vol-pop"><input type="range" id="seaVol" min="0" max="100" value="60" title="Громкость моря"></div>
-</div>
-<div class="sound-row" style="bottom: 274px">
-  <button class="wood-toggle active" id="woodToggle" title="Скрип дерева при перетаскивании" aria-label="Дерево">🪵</button>
-  <div class="vol-pop"><input type="range" id="woodVol" min="0" max="100" value="80" title="Громкость скрипа"></div>
-</div>
-<div class="sound-row" style="bottom: 332px">
-  <button class="raven-toggle" id="ravenToggle" title="Вороны" aria-label="Вороны">🐦‍⬛</button>
-  <div class="vol-pop"><input type="range" id="ravenVol" min="0" max="100" value="50" title="Громкость ворон"></div>
-</div>
-<div class="sound-row" style="bottom: 390px">
-  <button class="forest-toggle" id="forestToggle" title="Лес" aria-label="Лес">🌲</button>
-  <div class="vol-pop"><input type="range" id="forestVol" min="0" max="100" value="60" title="Громкость леса"></div>
-</div>
-<div class="sound-row" style="bottom: 448px">
-  <button class="fire-toggle" id="fireToggle" title="Костёр" aria-label="Костёр">🔥</button>
-  <div class="vol-pop"><input type="range" id="fireVol" min="0" max="100" value="60" title="Громкость костра"></div>
 </div>
 
 <footer>
@@ -3119,7 +3126,16 @@ renderCrocodiles(crocodiles);
 const T = {
   ru: {
     'hero.creators': 'СОЗДАТЕЛИ',
+    'hero.creator_name': 'МЕЛИКОВ МУХАММАД',
     'hero.basedon_html': 'Игра основана на <span class="based-name">Let\'s Create! Pottery</span>',
+    'settings.sounds': 'Звуки',
+    'snd.birds': 'Птицы',
+    'snd.rain': 'Дождь',
+    'snd.sea': 'Море',
+    'snd.wood': 'Скрип дерева',
+    'snd.raven': 'Вороны',
+    'snd.forest': 'Лес',
+    'snd.fire': 'Костёр',
     'hero.subtitle': 'Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.',
     'hero.cta': 'Смотреть каталог',
     'search.placeholder': 'Поиск по мебели, материалам, стилям...',
@@ -3147,7 +3163,16 @@ const T = {
   },
   en: {
     'hero.creators': 'CREATED BY',
+    'hero.creator_name': 'MELIKOV MUHAMMAD',
     'hero.basedon_html': 'Inspired by <span class="based-name">Let\'s Create! Pottery</span>',
+    'settings.sounds': 'Sounds',
+    'snd.birds': 'Birds',
+    'snd.rain': 'Rain',
+    'snd.sea': 'Ocean',
+    'snd.wood': 'Wood drag',
+    'snd.raven': 'Ravens',
+    'snd.forest': 'Forest',
+    'snd.fire': 'Campfire',
     'hero.subtitle': 'Furniture catalog, 3D interior builder and AI designer in one place. Build your room, view it in three dimensions and place an order — all in a single session.',
     'hero.cta': 'Browse Catalog',
     'search.placeholder': 'Search furniture, materials, styles...',
