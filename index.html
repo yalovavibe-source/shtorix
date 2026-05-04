@@ -54,27 +54,48 @@
     animation: fadeUp 1.2s ease-out;
   }
   .creators-badge {
-    display: inline-block;
-    padding: 8px 24px;
-    margin-bottom: 25px;
-    background: linear-gradient(135deg, rgba(212,184,96,0.15), rgba(212,184,96,0.05));
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 26px;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, rgba(212,184,96,0.18), rgba(212,184,96,0.05));
     border: 1px solid rgba(212,184,96,0.5);
     border-radius: 50px;
     color: var(--cream);
-    font-size: 0.85rem;
-    letter-spacing: 4px;
+    font-size: 0.78rem;
+    letter-spacing: 3px;
     text-transform: uppercase;
     font-weight: 500;
     box-shadow: 0 6px 20px rgba(212,184,96,0.15);
     animation: badgePulse 3s ease-in-out infinite;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .creators-badge .creators-name {
-    margin-left: 10px;
     color: var(--gold);
     font-family: 'Cinzel', serif;
     font-weight: 800;
-    letter-spacing: 5px;
+    font-size: 0.85rem;
+    letter-spacing: 4px;
     text-shadow: 0 0 12px rgba(212,184,96,0.4);
+  }
+  .based-on {
+    display: block;
+    margin-bottom: 22px;
+    color: var(--cream);
+    opacity: 0.65;
+    font-size: 0.78rem;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-style: italic;
+  }
+  .based-on .based-name {
+    color: var(--gold);
+    font-style: normal;
+    font-weight: 600;
+    margin-left: 6px;
+    text-shadow: 0 0 8px rgba(212,184,96,0.3);
   }
   @keyframes badgePulse {
     0%, 100% { box-shadow: 0 6px 20px rgba(212,184,96,0.15); }
@@ -1987,7 +2008,8 @@
 <!-- HERO -->
 <section class="hero">
   <div class="hero-content">
-    <div class="creators-badge"><span data-i18n="hero.creators">СОЗДАТЕЛИ</span> <span class="creators-name">MUHA</span></div>
+    <div class="creators-badge"><span data-i18n="hero.creators">СОЗДАТЕЛИ</span><span class="creators-name">МЕЛИКОВ МУХАММАД</span></div>
+    <div class="based-on" data-i18n-html="hero.basedon_html">Игра основана на <span class="based-name">Let's Create! Pottery</span></div>
     <h1>SHTORIX</h1>
     <p class="subtitle" data-i18n="hero.subtitle">Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.</p>
     <button class="btn btn-pulse" onclick="scrollToSpecies()">
@@ -3097,6 +3119,7 @@ renderCrocodiles(crocodiles);
 const T = {
   ru: {
     'hero.creators': 'СОЗДАТЕЛИ',
+    'hero.basedon_html': 'Игра основана на <span class="based-name">Let\'s Create! Pottery</span>',
     'hero.subtitle': 'Каталог мебели, 3D-конструктор интерьера и нейросеть-дизайнер в одном месте. Соберите комнату по своему вкусу, посмотрите её в трёх измерениях и оформите доставку — всё за один заход.',
     'hero.cta': 'Смотреть каталог',
     'search.placeholder': 'Поиск по мебели, материалам, стилям...',
@@ -3124,6 +3147,7 @@ const T = {
   },
   en: {
     'hero.creators': 'CREATED BY',
+    'hero.basedon_html': 'Inspired by <span class="based-name">Let\'s Create! Pottery</span>',
     'hero.subtitle': 'Furniture catalog, 3D interior builder and AI designer in one place. Build your room, view it in three dimensions and place an order — all in a single session.',
     'hero.cta': 'Browse Catalog',
     'search.placeholder': 'Search furniture, materials, styles...',
@@ -3158,6 +3182,10 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
     if (dict[key]) el.textContent = dict[key];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const key = el.dataset.i18nHtml;
+    if (dict[key]) el.innerHTML = dict[key];
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.dataset.i18nPlaceholder;
