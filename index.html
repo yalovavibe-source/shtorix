@@ -3079,8 +3079,9 @@ MTC.init();
 const ROOMS_KEY = 'shtorix_rooms';
 const NICKNAME_KEY = 'shtorix_nickname';
 const USERID_KEY = 'shtorix_userid';
-const PUBLIC_API = 'https://api.restful-api.dev/objects';
-const SHTORIX_TAG = 'shtorix-room';
+// Firebase Realtime Database — persistent global storage with CORS
+const FIREBASE_DB = 'https://shtorix-default-rtdb.europe-west1.firebasedatabase.app';
+const ROOMS_PATH = '/rooms';
 
 function getRooms() {
   try { return JSON.parse(localStorage.getItem(ROOMS_KEY) || '[]'); }
@@ -3285,48 +3286,39 @@ setTimeout(checkUrlForSharedRoom, 500);
 
 // ===== Public feed via restful-api.dev =====
 async function fetchPublicRooms() {
-  let apiRooms = [];
-  let apiOk = true;
   try {
-    const r = await fetch(PUBLIC_API);
-    const all = await r.json();
-    apiRooms = (all || [])
-      .filter(o => o.name === SHTORIX_TAG && o.data && o.data.room)
-      .map(o => ({ ...o.data.room, _publicId: o.id, _createdAt: o.createdAt }));
+    const r = await fetch(FIREBASE_DB + ROOMS_PATH + '.json');
+    const data = await r.json();
+    if (!data) return [];
+    return Object.entries(data).map(([id, room]) => ({
+      ...room,
+      _publicId: id,
+      _createdAt: room.sharedAt ? new Date(room.sharedAt).getTime() : Date.now()
+    })).sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
   } catch (e) {
-    apiOk = false;
+    console.error('fetch rooms failed', e);
+    return null;
   }
-  // Merge with locally saved own publications (so own posts survive API resets)
-  const myPubs = getMyPublications();
-  const seenIds = new Set(apiRooms.map(r => r._publicId));
-  myPubs.forEach(mp => {
-    if (!seenIds.has(mp._publicId)) {
-      apiRooms.push({ ...mp, _localOnly: true });
-    }
-  });
-  if (!apiOk && apiRooms.length === 0) return null;
-  return apiRooms.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
 }
 
 async function postPublicRoom(roomData, authorName, thumbnail) {
   const room = {
     ...roomData,
-    thumbnail,
+    thumbnail: thumbnail || '',
     author: authorName,
     authorId: getUserId(),
     sharedAt: new Date().toISOString()
   };
-  const body = { name: SHTORIX_TAG, data: { room } };
-  const r = await fetch(PUBLIC_API, {
+  const r = await fetch(FIREBASE_DB + ROOMS_PATH + '.json', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(room)
   });
   if (!r.ok) throw new Error('post failed: ' + r.status);
   const created = await r.json();
-  // Save to local persistent backup (so own posts survive API resets)
-  saveMyPublication({ ...room, _publicId: created.id, _createdAt: created.createdAt || Date.now() });
-  return created;
+  const id = created.name; // Firebase POST returns { name: "<generated-id>" }
+  saveMyPublication({ ...room, _publicId: id, _createdAt: Date.now() });
+  return { id, createdAt: Date.now() };
 }
 
 const MY_PUBS_KEY = 'shtorix_my_publications';
@@ -3342,7 +3334,7 @@ function saveMyPublication(room) {
 }
 
 async function deletePublicRoom(publicId) {
-  await fetch(PUBLIC_API + '/' + publicId, { method: 'DELETE' });
+  await fetch(FIREBASE_DB + ROOMS_PATH + '/' + publicId + '.json', { method: 'DELETE' });
 }
 
 let publicRoomsCache = [];
@@ -3477,16 +3469,18 @@ window.toggleComments = function(publicId) {
 };
 
 async function fetchSingleRoom(publicId) {
-  const r = await fetch(PUBLIC_API + '/' + publicId);
+  const r = await fetch(FIREBASE_DB + ROOMS_PATH + '/' + publicId + '.json');
   if (!r.ok) throw new Error('fetch failed');
-  return r.json();
+  const room = await r.json();
+  if (!room) throw new Error('not found');
+  return { data: { room } };
 }
 
 async function updateSingleRoom(publicId, room) {
-  const r = await fetch(PUBLIC_API + '/' + publicId, {
+  const r = await fetch(FIREBASE_DB + ROOMS_PATH + '/' + publicId + '.json', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: SHTORIX_TAG, data: { room } })
+    body: JSON.stringify(room)
   });
   if (!r.ok) throw new Error('update failed: ' + r.status);
   return r.json();
